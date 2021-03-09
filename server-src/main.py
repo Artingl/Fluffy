@@ -22,11 +22,9 @@ def apiPage(req, data):
         elif req == "login":
             response = user_functions.loginUser(data, request.remote_addr)
         elif req == "getFriendsList":
-            key = data['key']
-            if not user_functions.checkSessionKey(key, request.remote_addr):
-                response['message'] = 'Either unknown or invalid session key!'
-            else:
-                pass
+            response = user_functions.getFriendsList(data['key'], request.remote_addr)
+        elif req == "addFriend":
+            response = user_functions.addFriend(data['id'], data['key'], request.remote_addr)
         else:
             response['message'] = f'Api method {req} does not exists!'
     elif request.method == 'GET':
