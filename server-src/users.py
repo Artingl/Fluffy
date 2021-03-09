@@ -1,17 +1,15 @@
 import datetime
 import sqlalchemy
-from .db import SqlAlchemyBase
+import db
 
 
-class User(SqlAlchemyBase):
+class User(db.SqlAlchemyBase):
     __tablename__ = 'users'
 
-    id = sqlalchemy.Column(sqlalchemy.Integer,
-                           primary_key=True, autoincrement=True)
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    about = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    email = sqlalchemy.Column(sqlalchemy.String,
-                              index=True, unique=True, nullable=True)
-    hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    created_date = sqlalchemy.Column(sqlalchemy.DateTime,
-                                     default=datetime.datetime.now)
+    email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True, nullable=True)
+    password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    reg_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
+    session_key = sqlalchemy.Column(sqlalchemy.String, index=True, nullable=True)
+    friends = sqlalchemy.Column(sqlalchemy.String, index=True,  nullable=True)

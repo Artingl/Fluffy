@@ -11,7 +11,7 @@ __prefix = "[SERVER/BD] "
 
 def global_init(db_file):
     global __factory
-    db_file = db_file.split()
+    db_file = db_file.strip()
 
     if __factory:
         return
@@ -20,11 +20,16 @@ def global_init(db_file):
         raise Exception(__prefix + "File name cannot be null!")
 
     conn_str = f'sqlite:///{db_file.strip()}?check_same_thread=False'
-    print(f"{__prefix}Trying to connect to BD with address {conn_str}...")
+    print(f"{__prefix}Trying to connect to db with address {conn_str}...")
 
     engine = sa.create_engine(conn_str, echo=False)
     __factory = orm.sessionmaker(bind=engine)
 
-    from . import modules
+    import modules
 
     SqlAlchemyBase.metadata.create_all(engine)
+
+
+def create_session() -> Session:
+    global __factory
+    return __factory()
