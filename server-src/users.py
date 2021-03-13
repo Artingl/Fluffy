@@ -13,5 +13,6 @@ class User(db.SqlAlchemyBase):
     email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True, nullable=True)
     password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     reg_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
+    is_email = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
     session_key = sqlalchemy.Column(sqlalchemy.String, index=True, nullable=True)
     friends = sqlalchemy.Column(sqlalchemy.String, index=True,  nullable=True)

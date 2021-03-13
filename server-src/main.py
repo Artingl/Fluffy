@@ -21,6 +21,14 @@ def apiPage(req, data):
             response = user_functions.registerUser(data)
         elif req == "login":
             response = user_functions.loginUser(data, request.remote_addr)
+        elif req == "checkSessionKey":
+            k = user_functions.checkSessionKey(data['key'], request.remote_addr)
+            if k:
+                response['result'] = 'successful'
+                response['message'] = ''
+            else:
+                response['message'] = 'Invalid key'
+            response['content'] = k
         elif req == "getFriendsList":
             response = user_functions.getFriendsList(data['key'], request.remote_addr)
         elif req == "addFriend":

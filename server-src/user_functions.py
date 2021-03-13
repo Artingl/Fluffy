@@ -124,7 +124,9 @@ def registerUser(info):
     result = {'result': 'successful', 'message': 'User has successfully registered!', 'content': ''}
 
     if 'email' not in info or 'password' not in info or 'nickname' not in info \
-            or 'name' not in info or 'surname' not in info:
+            or 'name' not in info or 'surname' not in info and (info['email'] == "" or
+                                                                info['password'] == "" or info['nickname'] == ""
+                                                                or info['name'] == "" or info['surname'] == ""):
         result['result'] = 'error'
         result['message'] = 'Not enough arguments!'
         return result
@@ -140,6 +142,8 @@ def registerUser(info):
     user.name = info['name']
     user.password = info['password']
     user.email = info['email']
+    user.nickname = info['nickname']
+    user.surname = info['surname']
     db_sess = db.create_session()
     db_sess.add(user)
     db_sess.commit()
