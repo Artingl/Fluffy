@@ -1,6 +1,7 @@
 from flask import Flask, request
 import db
 import user_functions
+from termcolor import colored
 from include import *
 
 app = Flask(__name__)
@@ -45,7 +46,7 @@ def apiPage(req, data):
         elif request.method == 'GET':
             response['message'] = 'This server does not support GET requests!'
     except Exception as e:
-        print(e)
+        print(colored(f'[ERROR]: {e}', 'red'))
 
     return dictToJson(response)
 
