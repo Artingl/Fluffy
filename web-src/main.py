@@ -62,7 +62,7 @@ def rootPage():
             sessionKey = session['session_key']
             if not checkSessionKey():
                 return flask.redirect("/logout")
-            print(postRequest(apiServer + "/api/addDirectMessage/" + '{"files":{}, "key":"' + sessionKey + '", "message":"fdfd", "chatId":"1"}', 'json'))
+            print(postRequest(apiServer + "/api/createDirectMessage/" + '{"users":"1,2,10", "key":"' + sessionKey + '"}', 'json'))
 
             return renderPage("main.html", pageName='main')
 

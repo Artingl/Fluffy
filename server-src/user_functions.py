@@ -10,6 +10,35 @@ from include import dictToJson, jsonToDict
 from users import *
 
 
+def createDirectMessage(users, key, ip):
+    result = {'result': 'successful', 'message': 'Chat has created successfully', 'content': ''}
+    db_sess = db.create_session()
+    user = checkSessionKey(key, ip)
+    usersStr = users
+    users = users.split(",")
+
+    if not user:
+        result['result'] = 'error'
+        result['message'] = 'Invalid session key!'
+        return result
+
+    if str(user.id) not in users:
+        result['result'] = 'error'
+        result['message'] = 'An unknown error'
+        return result
+
+    # lastChatId = db_sess.query(directMessages).all()[-1].id + 1
+
+    dm = directMessages()
+    dm.users = usersStr
+    dm.content = '{}'
+    db_sess = db.create_session()
+    db_sess.add(dm)
+    db_sess.commit()
+
+    return result
+
+
 def addDirectMessage(files, message, chatId, key, ip):
     result = {'result': 'successful', 'message': 'Message has added successfully', 'content': ''}
     content = {}
@@ -17,6 +46,7 @@ def addDirectMessage(files, message, chatId, key, ip):
     user = checkSessionKey(key, ip)
 
     if not user:
+        result['result'] = 'error'
         result['message'] = 'Invalid session key!'
         return result
 
@@ -51,6 +81,7 @@ def getDirectMessages(key, ip):
     user = checkSessionKey(key, ip)
 
     if not user:
+        result['result'] = 'error'
         result['message'] = 'Invalid session key!'
         return result
 
@@ -63,7 +94,7 @@ def getDirectMessages(key, ip):
 
 
 def addFriend(id, key, ip):
-    result = {'result': 'successful', 'message': 'Friend has successfully added!', 'content': ''}
+    result = {'result': 'successful', 'message': 'Friend has added successfully!', 'content': ''}
     db_sess = db.create_session()
     user = checkSessionKey(key, ip)
     secondUser = db_sess.query(User).filter(User.id == id).first()

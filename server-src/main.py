@@ -41,6 +41,8 @@ def apiPage(req, data):
             elif req == "addDirectMessage":
                 response = user_functions.addDirectMessage(data['files'], data['message'], data['chatId'],
                                                            data['key'], request.remote_addr)
+            elif req == "createDirectMessage":
+                response = user_functions.createDirectMessage(data['users'], data['key'], request.remote_addr)
             else:
                 response['message'] = f'Api method {req} does not exists!'
         elif request.method == 'GET':
