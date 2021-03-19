@@ -2,16 +2,38 @@ import hashlib
 import random
 import string
 import db
+from werkzeug.security import generate_password_hash, check_password_hash
+from directMessages import directMessages
+from include import dictToJson, jsonToDict
 from users import *
+
+
+def getDirectMessages(key, ip):
+    result = {'result': 'successful', 'message': '', 'content': ''}
+    content = {}
+    db_sess = db.create_session()
+    user = checkSessionKey(key, ip)
+
+    if not user:
+        result['message'] = 'Invalid session key!'
+        return result
+
+    dms = db_sess.query(directMessages).filter(directMessages.users.like(f"%{user.id},%")).all()
+    for dm in dms:
+        content[dm.id] = jsonToDict(dm.content)
+
+    result['content'] = content
+    return result
 
 
 def addFriend(id, key, ip):
     result = {'result': 'successful', 'message': 'Friend has successfully added!', 'content': ''}
     db_sess = db.create_session()
-    user = db_sess.query(User).filter(User.session_key == key).first()
+    user = checkSessionKey(key, ip)
     secondUser = db_sess.query(User).filter(User.id == id).first()
 
-    if not checkSessionKey(key, ip):
+    if not user:
+        result['result'] = 'error'
         result['message'] = 'Invalid session key!'
         return result
 
@@ -43,10 +65,10 @@ def addFriend(id, key, ip):
 
 def getFriendsList(key, ip):
     result = {'result': 'successful', 'message': '', 'content': ''}
-    db_sess = db.create_session()
-    user = db_sess.query(User).filter(User.session_key == key).first()
+    user = checkSessionKey(key, ip)
 
-    if not checkSessionKey(key, ip):
+    if not user:
+        result['result'] = 'error'
         result['message'] = 'Invalid session key!'
         return result
 
@@ -72,7 +94,7 @@ def checkSessionKey(key, ip):
     if user is None or ip != key_ip:
         return False
 
-    return True
+    return user
 
 
 def genSessionKey(ip):
@@ -105,7 +127,7 @@ def loginUser(info, ip):
         result['message'] = 'User does not exist'
         return result
 
-    if user.password != info['password']:
+    if not check_password_hash(user.password, info['password']):
         result['result'] = 'error'
         result['message'] = 'Invalid password'
         return result
@@ -140,7 +162,7 @@ def registerUser(info):
 
     user = User()
     user.name = info['name']
-    user.password = info['password']
+    user.password = generate_password_hash(info['password'])
     user.email = info['email']
     user.nickname = info['nickname']
     user.surname = info['surname']

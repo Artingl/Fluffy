@@ -2,11 +2,11 @@ import json
 from json import JSONDecodeError
 
 
-def getResponse(respDict):
+def dictToJson(respDict):
     return json.dumps(respDict)
 
 
-def getData(data):
+def jsonToDict(data):
     if not data:
         return None
 

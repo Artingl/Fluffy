@@ -9,36 +9,41 @@ app.config['SECRET_KEY'] = ''
 
 @app.route("/api/<string:req>/<string:data>", methods=['POST', 'GET'])
 def apiPage(req, data):
-    data = getData(data)
+    data = jsonToDict(data)
     response = {
         'result': 'error',
         'message': 'An unknown error!',
         'content': ''
     }
-
-    if request.method == 'POST' and data:
-        if req == "register":
-            response = user_functions.registerUser(data)
-        elif req == "login":
-            response = user_functions.loginUser(data, request.remote_addr)
-        elif req == "checkSessionKey":
-            k = user_functions.checkSessionKey(data['key'], request.remote_addr)
-            if k:
-                response['result'] = 'successful'
-                response['message'] = ''
+    try:
+        if request.method == 'POST' and data:
+            if req == "register":
+                response = user_functions.registerUser(data)
+            elif req == "login":
+                response = user_functions.loginUser(data, request.remote_addr)
+            elif req == "checkSessionKey":
+                k = user_functions.checkSessionKey(data['key'], request.remote_addr)
+                if k:
+                    k = True
+                    response['result'] = 'successful'
+                    response['message'] = ''
+                else:
+                    response['message'] = 'Invalid key'
+                response['content'] = k
+            elif req == "getFriendsList":
+                response = user_functions.getFriendsList(data['key'], request.remote_addr)
+            elif req == "addFriend":
+                response = user_functions.addFriend(data['id'], data['key'], request.remote_addr)
+            elif req == "getDirectMessages":
+                response = user_functions.getDirectMessages(data['key'], request.remote_addr)
             else:
-                response['message'] = 'Invalid key'
-            response['content'] = k
-        elif req == "getFriendsList":
-            response = user_functions.getFriendsList(data['key'], request.remote_addr)
-        elif req == "addFriend":
-            response = user_functions.addFriend(data['id'], data['key'], request.remote_addr)
-        else:
-            response['message'] = f'Api method {req} does not exists!'
-    elif request.method == 'GET':
-        response['message'] = 'This server does not support GET requests!'
+                response['message'] = f'Api method {req} does not exists!'
+        elif request.method == 'GET':
+            response['message'] = 'This server does not support GET requests!'
+    except Exception as e:
+        print(e)
 
-    return getResponse(response)
+    return dictToJson(response)
 
 
 if __name__ == '__main__':
