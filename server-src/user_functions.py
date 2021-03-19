@@ -10,7 +10,7 @@ from include import dictToJson, jsonToDict
 from users import *
 
 
-def addDirectMessage(message, chatId, key, ip):
+def addDirectMessage(files, message, chatId, key, ip):
     result = {'result': 'successful', 'message': 'Message has added successfully', 'content': ''}
     content = {}
     db_sess = db.create_session()
@@ -34,7 +34,7 @@ def addDirectMessage(message, chatId, key, ip):
         messageId = int(list(content.keys())[-1]) + 1
 
     content[str(messageId)] = {
-        "content": message, "fromUser": str(user.id), "time": str(int(time.time())), "files": {}
+        "content": message, "fromUser": str(user.id), "time": str(int(time.time())), "files": jsonToDict(files)
     }
 
     dm.content = dictToJson(content)

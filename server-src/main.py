@@ -15,6 +15,7 @@ def apiPage(req, data):
         'message': 'An unknown error!',
         'content': ''
     }
+    
     try:
         if request.method == 'POST' and data:
             if req == "register":
@@ -37,7 +38,7 @@ def apiPage(req, data):
             elif req == "getDirectMessages":
                 response = user_functions.getDirectMessages(data['key'], request.remote_addr)
             elif req == "addDirectMessage":
-                response = user_functions.addDirectMessage(data['message'], data['chatId'],
+                response = user_functions.addDirectMessage(data['files'], data['message'], data['chatId'],
                                                            data['key'], request.remote_addr)
             else:
                 response['message'] = f'Api method {req} does not exists!'
