@@ -36,6 +36,9 @@ def apiPage(req, data):
                 response = user_functions.addFriend(data['id'], data['key'], request.remote_addr)
             elif req == "getDirectMessages":
                 response = user_functions.getDirectMessages(data['key'], request.remote_addr)
+            elif req == "addDirectMessage":
+                response = user_functions.addDirectMessage(data['message'], data['chatId'],
+                                                           data['key'], request.remote_addr)
             else:
                 response['message'] = f'Api method {req} does not exists!'
         elif request.method == 'GET':
@@ -44,6 +47,15 @@ def apiPage(req, data):
         print(e)
 
     return dictToJson(response)
+
+
+@app.errorhandler(404)
+def notFound(page):
+    return dictToJson({
+        'result': 'error',
+        'message': 'This page does not exist!',
+        'content': ''
+    })
 
 
 if __name__ == '__main__':
