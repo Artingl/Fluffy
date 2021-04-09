@@ -54,7 +54,7 @@ def apiPage(req, data):
 
 
 @app.errorhandler(404)
-def notFound(page):
+def error_404(page):
     return dictToJson({
         'result': 'error',
         'message': 'This page does not exist!',

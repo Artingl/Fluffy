@@ -191,12 +191,12 @@ def loginUser(info, ip):
 
     if user is None:
         result['result'] = 'error'
-        result['message'] = 'User does not exist'
+        result['message'] = 'User does not exist or invalid password!'
         return result
 
     if not check_password_hash(user.password, info['password']):
         result['result'] = 'error'
-        result['message'] = 'Invalid password'
+        result['message'] = 'User does not exist or invalid password!'
         return result
 
     session_key = genSessionKey(ip)

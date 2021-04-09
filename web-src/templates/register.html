@@ -1,6 +1,7 @@
-<head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+{% extends "index.html" %}
 
+
+{% block content %}
     <form action="/register" method="POST">
       <div class="form-group">
         <label for="email">Email address</label>
@@ -33,4 +34,4 @@
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 
-</head>
+{% endblock %}

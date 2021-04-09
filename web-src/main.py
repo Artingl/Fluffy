@@ -11,21 +11,23 @@ app.config['SECRET_KEY'] = '^-i>FKYS5(,dk.*RfA+.g8eaG3bVO4=?W,3Vi+GVGP[]+.+MHSgf
 apiServer = "http://127.0.0.1:8374"
 
 
-def renderPage(fileName, **settings):
-    result = render_template("index.html", **settings)
-    result += render_template(fileName, **settings)
-
-    return result
-
-
 def postRequest(url, return_type='text'):
-    r = requests.post(url)
-    if return_type == 'json':
-        return r.json()
-    if return_type == 'text':
-        return r.text
+    try:
+        r = requests.post(url)
+        if return_type == 'json':
+            return r.json()
+        if return_type == 'text':
+            return r.text
 
-    return r
+        return r
+    except:
+        result = {
+            'content': '',
+            'result': 'error',
+            'message': 'An unknown error while connect to the API server!'
+        }
+
+        return json.dumps(result) if return_type == 'text' else result
 
 
 def checkSessionKey():
@@ -43,14 +45,6 @@ def checkSessionDict(name):
     return name in session
 
 
-def registerPage():
-    return renderPage("register.html", pageName='Register')
-
-
-def loginPage():
-    return renderPage("login.html", pageName='Login')
-
-
 @app.route("/", methods=['GET', 'POST'])
 def rootPage():
     if request.method == 'POST':
@@ -64,7 +58,7 @@ def rootPage():
                 return flask.redirect("/logout")
             print(postRequest(apiServer + "/api/createDirectMessage/" + '{"users":"1,2,10", "key":"' + sessionKey + '"}', 'json'))
 
-            return renderPage("main.html", pageName='main')
+            return render_template("main.html", pageName='main')
 
 
 @app.route("/login", methods=['POST', 'GET'])
@@ -75,22 +69,15 @@ def login():
     if request.method == 'POST':
         req = json.dumps({'email': request.form.get('email'), 'password': request.form.get('password')})
         apiResponse = dict(postRequest(f"{apiServer}/api/login/{req}", "json"))
-        session['session_key'] = apiResponse["content"]
 
         if apiResponse['result'] == "error":
             return flask.redirect(f"/login?error_msg={apiResponse['message']}")
         else:
+            session['session_key'] = apiResponse["content"]
             return flask.redirect("/")
 
     error = request.args.get("error_msg")
-    if error:
-        error = f'''<div class="alert alert-danger" role="alert">
-                      {error}
-                    </div>'''
-    else:
-        error = ""
-
-    return error + loginPage()
+    return render_template("login.html", pageName='Login', msgs=error)
 
 
 @app.route("/register", methods=['POST', 'GET'])
@@ -113,11 +100,11 @@ def register():
             'nickname': request.form.get('text-nickname')
         })
         apiResponse = dict(postRequest(f"{apiServer}/api/register/{req}", "json"))
-        session['session_key'] = apiResponse["content"]
 
         if apiResponse['result'] == "error":
             return flask.redirect(f"/register?error_msg={apiResponse['message']}")
         else:
+            session['session_key'] = apiResponse["content"]
             req = json.dumps({'email': request.form.get('email'), 'password': request.form.get('password')})
             apiResponse = dict(postRequest(f"{apiServer}/api/login/{req}", "json"))
             session['session_key'] = apiResponse["content"]
@@ -125,14 +112,7 @@ def register():
             return flask.redirect("/")
 
     error = request.args.get("error_msg")
-    if error:
-        error = f'''<div class="alert alert-danger" role="alert">
-                          {error}
-                        </div>'''
-    else:
-        error = ""
-
-    return error + registerPage()
+    return render_template("register.html", pageName='Register', msgs=error)
 
 
 @app.route("/logout", methods=['POST', 'GET'])
