@@ -7,21 +7,25 @@ let onReady = function () {
 
     darkenBg.hide()
     settingsForm.hide()
-    //userMiniSettings.hide()
+    userMiniSettings.hide()
 
     setInterval(function(){
         $.ajax({
-            url: api + "/api/getDirectMessages/" + "{}",
+            url: api + "/api/getDirectMessages/" + '{"key":"' + token + '"}',
             type: "post",
             success: function (data) {
-                console.log(data)
+                data = JSON.parse(data)
+                for (const msg in data['content'])
+                {
+                    console.log(data['content'][msg])
+                }
             }
         });
     }, 1000);
 
     $(document).click(function(event) {
         let $target = $(event.target);
-        if(!$target.closest('.userMiniSettings').length && !$target.closest('.header').length && userMiniSettings.is(":visible")) {
+        if(!$target.closest('.header').length && userMiniSettings.is(":visible")) {
           userMiniSettings.fadeOut(250)
         }
     });

@@ -5,8 +5,11 @@ import db
 import user_functions
 from termcolor import colored
 from include import *
+from flask_cors import CORS
+
 
 app = Flask(__name__)
+CORS(app)
 app.config['SECRET_KEY'] = ''
 
 

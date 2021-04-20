@@ -1,3 +1,62 @@
+<style>
+
+    .userMiniSettings {
+        position: absolute;
+        width: 200px;
+
+        z-index: 999;
+        left: calc(100% - 220px);
+        top: 80px;
+
+        font-size: 18px;
+        box-shadow: 0 0 60px rgba(0,0,0,0.2);
+        border-radius: 16px;
+        background-color: white;
+    }
+
+    .settingsForm {
+        background-color: white;
+        border-radius: 16px;
+        box-shadow: 0 0 60px rgba(0,0,0,0.2);
+        width: 420px;
+        height: 280px;
+
+        position: absolute;
+        z-index: 999;
+        top: 50%;
+        left: 50%;
+        margin: -140px 0 0 -210px;
+
+        text-align: center;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .btn-logout {
+        width: 100%;
+        height: 40px;
+    }
+
+    .chats {
+        z-index: -112;
+        position: absolute;
+        background-color: black;
+
+        width: 300px;
+        height: calc(100% - 60px);
+    }
+
+    .current-chat {
+        z-index: -112;
+        position: absolute;
+        background-color: #29b6f6;
+
+        width: calc(100% - 300px);
+        height: calc(100% - 60px);
+        left: 300px;
+    }
+
+</style>
+
 <div class="settingsForm"></div>
 
 <div class="userMiniSettings" id="userMiniSettings">
@@ -6,5 +65,9 @@
 </div>
 
 <div class="chats">
+
+</div>
+
+<div class="current-chat">
 
 </div>
