@@ -15,14 +15,11 @@ let onReady = function () {
         $.ajax({
             url: api + "/api/getDirectMessages/" + '{"key":"' + token + '"}',
             type: "post",
-            success: function (data) {
-                data = JSON.parse(data)
-                console.log(lastChats !== data)
-                console.log(lastChats)
+            success: function (dataStr) {
+                data = JSON.parse(dataStr)
 
-                if (lastChats != data)
-                {
-                    lastChats = data
+                if (lastChats !== dataStr) {
+                    lastChats = dataStr
 
                     $('.chats').empty()
                     $('.chats').append('<div style="margin-top: 20px;"></div>')
@@ -43,7 +40,7 @@ let onReady = function () {
                                 }
 
                                 addChat(
-                                    "https://yetion.ru:4433/files/" + linkToUserIcon,
+                                    api + "/files/" + linkToUserIcon,
                                     newData['content'][1] + " " + newData['content'][2],
                                     addToMsg + lastMsg['content']
                                 )
@@ -51,6 +48,11 @@ let onReady = function () {
                         });
                     }
                 }
+
+                $('.loading').fadeOut(250)
+            },
+            error: function () {
+                $('.loading').fadeIn(250)
             }
         });
     }, 1000);
@@ -72,8 +74,8 @@ let onReady = function () {
     });
 };
 
-let changeHeaderUserIcon = function (path) {
-    let userIcon = document.getElementById("userIcon");
+let changeUserIcon = function (path, _id) {
+    let userIcon = document.getElementById(_id);
     userIcon.src = api + "/files/" + path
 };
 

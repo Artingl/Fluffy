@@ -54,12 +54,10 @@
 {% if not disableHeader %}
     <div class="header">
         {% if userInfo %}
-            {% if userIcon %}
-                <div class="user-icon"><img id="userIcon" style="pointer-events: none;"></div>
-                <script>
-                    changeHeaderUserIcon("{{ userIcon }}");
-                </script>
-            {% endif %}
+            <div class="user-icon"><img id="userIcon" style="pointer-events: none;"></div>
+            <script>
+                changeUserIcon("{{ userIcon }}", "userIcon");
+            </script>
         {% endif %}
 
     </div>

@@ -1,5 +1,6 @@
 import json
 import os
+import random
 
 import flask
 import requests
@@ -10,7 +11,15 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = '^-i>FKYS5(,dk.*RfA+.g8eaG3bVO4=?W,3Vi+GVGP[]+.+MHSgf.DEQ[B44NYcNaMiC<T8TWL-g`KW63nHnP[' \
                            'Mg`f>n.3-dP9KD/_*d6`m>G<bfdZ6_C7G`O]UAS-*MHK@mIVb/.BF1ST9]QV@aL_ce7DE*Ej`ZL]g?lCUN6QeS' \
                            '-`*4a(b,/V+5<Ij:7/@1[fj6A?Uk):n4(DM8P^)21FEAiG?NRX6ljll1LIENEYDnc(k/kJbe?:d7`jhj[BSD '
-apiServer = "https://yetion.ru:4433"
+apiServer = "http://127.0.0.1:4433"
+randomFunMessage_loading = [
+    'We\'re about to load',
+    'Sometimes you have to wait',
+    'Ayyyoooo, we\'re loading!',
+    'It\'s time to wait',
+    'Loading',
+    'Gimme second'
+]
 
 
 def postRequest(url, return_type='text'):
@@ -71,6 +80,11 @@ def rootPage():
         elif checkKey[1] == 500:
             return error_500(500)
         else:
+            apiResponse = dict(postRequest(apiServer + "/api/getUser/" + '{"id":"' + str(session['me'][6]) + '"}', 'json'))
+
+            session['userInfo'] = apiResponse["content"][5]
+            session['me'] = apiResponse['content']
+
             sessionKey = session['session_key']
             userInfo = session['userInfo']
             me = session['me']
@@ -80,9 +94,9 @@ def rootPage():
 
             userIcon = 'standard.jpg'
             if 'logo' in userInfo:
-                userIcon = userInfo['logo']
+                userIcon = json.loads(userInfo)['logo']
 
-            return page("main.html", pageName='main', me=json.dumps(meDict), userInfo=userInfo, userIcon=userIcon, userToken=sessionKey)
+            return page("main.html", randomFunMessage_loading=random.choice(randomFunMessage_loading), pageName='main', meList=me, me=json.dumps(meDict), userInfo=userInfo, userIcon=userIcon, userToken=sessionKey)
 
 
 @app.route('/favicon.ico')
@@ -142,6 +156,7 @@ def register():
 
             session['session_key'] = apiResponse["content"][0]
             session['userInfo'] = apiResponse["content"][1]
+            session['me'] = apiResponse['content'][2]
 
             return flask.redirect("/")
 
@@ -160,10 +175,9 @@ def logout():
 @app.errorhandler(500)
 def error_500(err):
     return render_template("serverError.html", errorTitle="Server error!",
-                           errorMessage="Unknown server error while executing your request. Please, try again later.",
+                           errorMessage="Unknown server error while executing your request. Please, try again later or try to sign out.",
                            errorCode=500)
 
 
 if __name__ == '__main__':
-    app.run(port=443, host='192.168.88.18',
-            ssl_context=('C:\\Certbot\\live\\yetion.ru\\fullchain.pem', 'C:\\Certbot\\live\\yetion.ru\\privkey.pem'))
+    app.run(port=443, host='127.0.0.1')

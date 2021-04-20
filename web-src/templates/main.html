@@ -2,10 +2,10 @@
 
     .userMiniSettings {
         position: absolute;
-        width: 200px;
+        width: 250px;
 
         z-index: 999;
-        left: calc(100% - 220px);
+        left: calc(100% - 280px);
         top: 80px;
 
         font-size: 18px;
@@ -125,13 +125,73 @@
         color: #404040;
     }
 
+    .loading {
+        width: 100%;
+        height: calc(100% + 60px);
+        top: -60px;
+        z-index: 9999;
+        position: absolute;
+        background-color: white;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loading img {
+        position: absolute;
+        top: calc(50% - 48px);
+    }
+
+    .loading label {
+        position: absolute;
+        font-family: 'Roboto', sans-serif;
+        font-size: 16px;
+        font-weight: 500;
+        color: #404040;
+
+        top: calc(50% + 80px);
+    }
+
+    .user-icon-context {
+        position: absolute;
+        margin-top: 10px;
+        margin-left: 10%;
+    }
+
+    .user-icon-context img {
+        width: 40px;
+        height: 40px;
+        border-radius: 40px;
+    }
+
+    .nameContext {
+        position: absolute;
+        font-family: 'Roboto', sans-serif;
+        font-size: 16px;
+        margin-top: 20px;
+        margin-left: calc(10% + 55px);
+
+        width: 150px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
 </style>
 
 <div class="settingsForm"></div>
 
 <div class="userMiniSettings" id="userMiniSettings">
-    <button onclick="settings()" type="button" class="blueButton button btn-logout" style="border-radius: 16px 16px 0 0;">Settings</button>
-    <button onclick="logout()" type="button" class="redButton button btn-logout" style="border-radius: 0 0 16px 16px;">Logout</button>
+    <div class="user-icon-context"><img id="userIconContext" style="pointer-events: none;"></div>
+    <script>
+        changeUserIcon("{{ userIcon }}", "userIconContext");
+    </script>
+    <div class="nameContext">{{ meList[1] }} {{ meList[2] }}</div>
+    <div style="margin-top: 80px;"></div>
+    <div style="position: absolute; margin-top: -15px; margin-left: 10%; border-radius: 100px; width: 80%; height: 2px; background-color: #cfcfcf;"></div>
+    <button onclick="settings()" type="button" class="blueButton button btn-logout">Settings</button>
+    <button onclick="logout()" type="button" class="redButton button btn-logout">Logout</button>
 </div>
 
 <div class="chats">
@@ -142,4 +202,9 @@
     <div class="current-chat-empty">
         <label class="current-chat-empty-label">Open any chat</label>
     </div>
+</div>
+
+<div class="loading">
+    <img src="static/img/logo.png">
+    <label>{{ randomFunMessage_loading }}</label>
 </div>

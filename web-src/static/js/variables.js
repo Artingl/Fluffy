@@ -1,1 +1,1 @@
-let api = "https://yetion.ru:4433"
+let api = "http://127.0.0.1:4433"
