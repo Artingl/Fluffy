@@ -13,7 +13,7 @@ CORS(app)
 app.config['SECRET_KEY'] = ''
 
 
-@app.route("/userIcons/<string:path>")
+@app.route("/files/<string:path>")
 def userIcons(path):
     folderPath = os.path.join(app.root_path, 'data/images')
     if not os.path.isfile(folderPath + "/" + path):

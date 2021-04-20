@@ -42,7 +42,7 @@ let onReady = function () {
 
 let changeHeaderUserIcon = function (path) {
     let userIcon = document.getElementById("userIcon");
-    userIcon.src = api + "/userIcons/" + path
+    userIcon.src = api + "/files/" + path
 };
 
 let settings = function () {

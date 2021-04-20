@@ -39,20 +39,86 @@
     .chats {
         z-index: -112;
         position: absolute;
-        background-color: black;
+        border: 0 solid #d5d5d5;
+        border-right-width: 1px;
 
-        width: 300px;
+        width: 320px;
         height: calc(100% - 60px);
     }
 
     .current-chat {
         z-index: -112;
         position: absolute;
-        background-color: #29b6f6;
 
-        width: calc(100% - 300px);
+        width: calc(100% - 320px);
         height: calc(100% - 60px);
-        left: 300px;
+        left: 320px;
+    }
+
+    .current-chat-empty {
+        width: 100%;
+        height: 100%;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .current-chat-empty-label {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 500;
+        font-size: 18px;
+        color: #404040;
+    }
+
+    .chat-element {
+        position: relative;
+        width: 100%;
+        height: 100px;
+        margin-top: 1px;
+    }
+
+    .chat-element:hover {
+        background-color: black;
+    }
+
+    .chat-element img {
+        position: absolute;
+        top: 25px;
+        left: 25px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50px;
+    }
+
+    .chat-element .name {
+        position: absolute;
+        top: 24px;
+        left: 90px;
+
+        width: 200px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+
+        font-family: 'Roboto', sans-serif;
+        font-size: 16px;
+        color: #404040;
+    }
+
+    .chat-element .msg {
+        position: absolute;
+        top: 46px;
+        left: 90px;
+
+        width: 200px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+
+        font-family: 'Roboto', sans-serif;
+        font-size: 16px;
+        color: #404040;
     }
 
 </style>
@@ -65,9 +131,31 @@
 </div>
 
 <div class="chats">
-
+    <div style="margin-top: 20px;"></div>
+    <div class="chat-element">
+        <img src="https://yetion.ru:4433/files/standard.jpg">
+        <label class="name">Crutio Chell</label>
+        <label class="msg">You: Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's</label>
+    </div>
+    <div class="chat-element">
+        <img src="https://yetion.ru:4433/files/standard.jpg">
+        <label class="name">Crutio Chell</label>
+        <label class="msg">You: Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's</label>
+    </div>
+    <div class="chat-element">
+        <img src="https://yetion.ru:4433/files/standard.jpg">
+        <label class="name">Crutio Chell</label>
+        <label class="msg">You: Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's</label>
+    </div>
+    <div class="chat-element">
+        <img src="https://yetion.ru:4433/files/standard.jpg">
+        <div class="name">Crutio Chell</div>
+        <div class="msg">You: Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's</div>
+    </div>
 </div>
 
 <div class="current-chat">
-
+    <div class="current-chat-empty">
+        <label class="current-chat-empty-label">Open any chat</label>
+    </div>
 </div>
