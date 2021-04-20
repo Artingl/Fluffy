@@ -1,6 +1,3 @@
-let token = "";
-let me = {};
-
 let onReady = function () {
     let userMiniSettings = $(".userMiniSettings")
     let settingsForm = $(".settingsForm")
@@ -12,22 +9,19 @@ let onReady = function () {
     userMiniSettings.hide()
 
     setInterval(function(){
+        if (!interval) return;
         $.ajax({
             url: api + "/api/getDirectMessages/" + '{"key":"' + token + '"}',
             type: "post",
-            success: function (data) {
-                data = JSON.parse(data)
-                console.log(lastChats !== data)
-                console.log(lastChats)
+            success: function (dataStr) {
+                let data = JSON.parse(dataStr)
 
-                if (lastChats != data)
-                {
-                    lastChats = data
+                if (lastChats !== dataStr) {
+                    lastChats = dataStr
 
                     $('.chats').empty()
                     $('.chats').append('<div style="margin-top: 20px;"></div>')
-                    for (const msg in data['content'])
-                    {
+                    for (const msg in data['content']) {
                         let chatUsers = data['content'][msg][0].split(",")
                         $.ajax({
                             url: api + "/api/getUser/" + '{"id":"' + chatUsers[0] + '"}',
@@ -36,21 +30,32 @@ let onReady = function () {
                                 newData = JSON.parse(newData)
                                 let lastMsg = data['content'][msg].slice(-1)[0][0]
                                 let addToMsg = ""
+                                let title = newData['content'][1] + " " + newData['content'][2]
                                 let linkToUserIcon = JSON.parse(newData['content'][5])['logo']
 
                                 if (lastMsg['fromUser'] == me[6]) {
                                     addToMsg = "You: "
                                 }
 
+                                if (data['content'][msg][1]['title']) {
+                                    title = data['content'][msg][1]['title']
+                                }
+
                                 addChat(
-                                    "https://yetion.ru:4433/files/" + linkToUserIcon,
-                                    newData['content'][1] + " " + newData['content'][2],
-                                    addToMsg + lastMsg['content']
+                                    api + "/files/" + linkToUserIcon,
+                                    title,
+                                    addToMsg + lastMsg['content'],
+                                    msg
                                 )
                             }
                         });
                     }
                 }
+
+                $('.loading').fadeOut(250)
+            },
+            error: function () {
+                $('.loading').fadeIn(250)
             }
         });
     }, 1000);
@@ -72,13 +77,22 @@ let onReady = function () {
     });
 };
 
-let changeHeaderUserIcon = function (path) {
-    let userIcon = document.getElementById("userIcon");
+let openChat = function (_id) {
+    if (selectedChat !== false) {
+        $('.chat-element-id_' + selectedChat).css('background', 'transparent');
+    }
+    $('.chat-element-id_' + _id).css('background', '#f1f1f1');
+
+    selectedChat = _id;
+};
+
+let changeUserIcon = function (path, _id) {
+    let userIcon = document.getElementById(_id);
     userIcon.src = api + "/files/" + path
 };
 
-let addChat = function (userIcon, name, lastMessage) {
-    $('.chats').append('<div class="chat-element"><img src="' + userIcon + '"><div class="name">' + name + '</div><div class="msg">' + lastMessage + '</div></div>');
+let addChat = function (userIcon, name, lastMessage, _id) {
+    $('.chats').append('<div onClick="openChat(' + _id + ')" class="chat-element chat-element-id_' + _id + '"><img src="' + userIcon + '"><div class="name">' + name + '</div><div class="msg">' + lastMessage + '</div></div>');
 };
 
 let settings = function () {

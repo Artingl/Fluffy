@@ -2,10 +2,10 @@
 
     .userMiniSettings {
         position: absolute;
-        width: 200px;
+        width: 250px;
 
         z-index: 999;
-        left: calc(100% - 220px);
+        left: calc(100% - 280px);
         top: 80px;
 
         font-size: 18px;
@@ -31,8 +31,9 @@
         font-family: 'Roboto', sans-serif;
     }
 
-    .btn-logout {
-        width: 100%;
+    .btn-context {
+        width: 90%;
+        margin-left: 5%;
         height: 40px;
     }
 
@@ -40,13 +41,13 @@
         position: absolute;
         border: 0 solid #d5d5d5;
         border-right-width: 1px;
+        overflow: auto;
 
         width: 320px;
-        height: calc(100% - 60px);
+        max-height: calc(100% - 60px);
     }
 
     .current-chat {
-        z-index: -112;
         position: absolute;
 
         width: calc(100% - 320px);
@@ -125,13 +126,114 @@
         color: #404040;
     }
 
+    .loading {
+        width: 100%;
+        height: calc(100% + 60px);
+        top: -60px;
+        z-index: 9999;
+        position: absolute;
+        background-color: white;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loading img {
+        position: absolute;
+        top: calc(50% - 48px);
+    }
+
+    .loading label {
+        position: absolute;
+        font-family: 'Roboto', sans-serif;
+        font-size: 16px;
+        font-weight: 500;
+        color: #404040;
+
+        top: calc(50% + 80px);
+    }
+
+    .user-icon-context {
+        position: absolute;
+        margin-top: 10px;
+        margin-left: 10%;
+    }
+
+    .user-icon-context img {
+        width: 40px;
+        height: 40px;
+        border-radius: 40px;
+    }
+
+    .nameContext {
+        position: absolute;
+        font-family: 'Roboto', sans-serif;
+        font-size: 16px;
+        margin-top: 20px;
+        margin-left: calc(10% + 55px);
+
+        width: 150px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .own-msg, .other-msg {
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        min-height: 80px;
+        margin-top: 30px;
+        margin-left: 20px;
+
+        border-radius: 16px;
+    }
+
+    .other-msg .msg-content, .own-msg .msg-content {
+        font-family: 'Roboto', sans-serif;
+        font-size: 16px;
+
+        word-wrap: break-word;
+    }
+
+    .own-msg {
+        background-color: #298cf6;
+    }
+
+    .other-msg {
+        background-color: #fff;
+    }
+
+    .current-chat-messages {
+        background-color: black;
+        width: 100%;
+        overflow: auto;
+        max-height: calc(100% - 100px);
+        min-height: calc(100% - 100px);
+    }
+
+    .message-area {
+        position: absolute;
+        bottom: 40px;
+        width: 90%;
+        left: 5%;
+        border-radius: 16px;
+    }
+
 </style>
 
 <div class="settingsForm"></div>
 
 <div class="userMiniSettings" id="userMiniSettings">
-    <button onclick="settings()" type="button" class="blueButton button btn-logout" style="border-radius: 16px 16px 0 0;">Settings</button>
-    <button onclick="logout()" type="button" class="redButton button btn-logout" style="border-radius: 0 0 16px 16px;">Logout</button>
+    <div class="user-icon-context"><img id="userIconContext" style="pointer-events: none;"></div>
+    <script>
+        changeUserIcon("{{ userIcon }}", "userIconContext");
+    </script>
+    <div class="nameContext">{{ meList[1] }} {{ meList[2] }}</div>
+    <div style="margin-top: 80px;"></div>
+    <div style="position: absolute; margin-top: -15px; margin-left: 10%; border-radius: 100px; width: 80%; height: 2px; background-color: #cfcfcf;"></div>
+    <button onclick="settings()" type="button" class="blueButton button btn-context">Settings</button>
+    <button onclick="logout()" type="button" class="redButton button btn-context">Logout</button>
+    <div style="margin-top: 20px;"></div>
 </div>
 
 <div class="chats">
@@ -139,7 +241,19 @@
 </div>
 
 <div class="current-chat">
-    <div class="current-chat-empty">
+    <!--<div class="current-chat-empty">
         <label class="current-chat-empty-label">Open any chat</label>
+    </div>-->
+    <div class="current-chat-messages">
+        <div class="own-msg"><div class="msg-content">wefw42rt43gterhjgflduiguergierfgrehjfdhjgvfdhghjfbhfdhgfdhghfdgiofdgioiohgreuohghfghufdghfduhgfjghdhuguhdgjuhfjuhgfdhghukfdghukfdhjukgdfhughjfdkghkfdgkhufghrthtrhr</div></div>
+        <div class="other-msg"><div class="msg-content">asdlk;fgsuygfshugshjff</div></div>
     </div>
+    <div class="current-chat-content">
+        <input type="text" class="form-control message-area" name="password" placeholder="Type a message">
+    </div>
+</div>
+
+<div class="loading">
+    <img src="static/img/logo.png">
+    <label>{{ randomFunMessage_loading }}</label>
 </div>

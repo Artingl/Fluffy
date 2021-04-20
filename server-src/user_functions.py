@@ -87,7 +87,7 @@ def getDirectMessages(key, ip):
 
     dms = db_sess.query(directMessages).filter(directMessages.users.like(f"%{user.id},%")).all()
     for dm in dms:
-        content[dm.id] = [dm.users.replace(f"{user.id},", ""), jsonToDict(dm.content)]
+        content[dm.id] = [dm.users.replace(f"{user.id},", ""), jsonToDict(dm.info), jsonToDict(dm.content)]
 
     result['content'] = content
     return result
