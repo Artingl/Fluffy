@@ -33,16 +33,22 @@ let onReady = function () {
                                 newData = JSON.parse(newData)
                                 let lastMsg = data['content'][msg].slice(-1)[0][0]
                                 let addToMsg = ""
+                                let title = newData['content'][1] + " " + newData['content'][2]
                                 let linkToUserIcon = JSON.parse(newData['content'][5])['logo']
 
                                 if (lastMsg['fromUser'] == me[6]) {
                                     addToMsg = "You: "
                                 }
 
+                                if (data['content'][msg][2]) {
+                                    title = data['content'][msg][3]
+                                }
+
                                 addChat(
                                     api + "/files/" + linkToUserIcon,
-                                    newData['content'][1] + " " + newData['content'][2],
-                                    addToMsg + lastMsg['content']
+                                    title,
+                                    addToMsg + lastMsg['content'],
+                                    msg
                                 )
                             }
                         });
@@ -74,13 +80,17 @@ let onReady = function () {
     });
 };
 
+let openChat = function (_id) {
+    console.log(_id)
+};
+
 let changeUserIcon = function (path, _id) {
     let userIcon = document.getElementById(_id);
     userIcon.src = api + "/files/" + path
 };
 
-let addChat = function (userIcon, name, lastMessage) {
-    $('.chats').append('<div class="chat-element"><img src="' + userIcon + '"><div class="name">' + name + '</div><div class="msg">' + lastMessage + '</div></div>');
+let addChat = function (userIcon, name, lastMessage, _id) {
+    $('.chats').append('<div onClick="openChat(' + _id + ')" class="chat-element"><img src="' + userIcon + '"><div class="name">' + name + '</div><div class="msg">' + lastMessage + '</div></div>');
 };
 
 let settings = function () {

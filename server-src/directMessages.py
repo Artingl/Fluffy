@@ -9,3 +9,4 @@ class directMessages(db.SqlAlchemyBase):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     users = sqlalchemy.Column(sqlalchemy.String, index=True, nullable=True)
     content = sqlalchemy.Column(sqlalchemy.String, default='{}')
+    info = sqlalchemy.Column(sqlalchemy.String, default='{"state":{}, "title":""}')
