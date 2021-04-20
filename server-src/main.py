@@ -50,6 +50,8 @@ def apiPage(req, data):
                 response = user_functions.getFriendsList(data['key'], request.remote_addr)
             elif req == "addFriend":
                 response = user_functions.addFriend(data['id'], data['key'], request.remote_addr)
+            elif req == "getUser":
+                response = user_functions.getUser(data['id'])
             elif req == "getDirectMessages":
                 response = user_functions.getDirectMessages(data['key'], request.remote_addr)
             elif req == "addDirectMessage":

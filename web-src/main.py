@@ -73,13 +73,16 @@ def rootPage():
         else:
             sessionKey = session['session_key']
             userInfo = session['userInfo']
+            me = session['me']
+            meDict = {}
+            for e, i in enumerate(me):
+                meDict[e] = i
 
+            userIcon = 'standard.jpg'
             if 'logo' in userInfo:
                 userIcon = userInfo['logo']
-            else:
-                userIcon = 'standard.jpg'
 
-            return page("main.html", pageName='main', userInfo=userInfo, userIcon=userIcon, userToken=sessionKey)
+            return page("main.html", pageName='main', me=json.dumps(meDict), userInfo=userInfo, userIcon=userIcon, userToken=sessionKey)
 
 
 @app.route('/favicon.ico')
@@ -102,6 +105,7 @@ def login():
         else:
             session['session_key'] = apiResponse["content"][0]
             session['userInfo'] = apiResponse["content"][1]
+            session['me'] = apiResponse['content'][2]
             return flask.redirect("/")
 
     error = request.args.get("error_msg")

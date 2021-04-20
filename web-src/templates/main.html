@@ -37,7 +37,6 @@
     }
 
     .chats {
-        z-index: -112;
         position: absolute;
         border: 0 solid #d5d5d5;
         border-right-width: 1px;
@@ -76,10 +75,15 @@
         width: 100%;
         height: 100px;
         margin-top: 1px;
+
+        -moz-transition: all .2s ease-in;
+        -o-transition: all .2s ease-in;
+        -webkit-transition: all .2s ease-in;
+        transition: all .2s ease-in;
     }
 
     .chat-element:hover {
-        background-color: black;
+        background-color: #f1f1f1;
     }
 
     .chat-element img {
@@ -132,26 +136,6 @@
 
 <div class="chats">
     <div style="margin-top: 20px;"></div>
-    <div class="chat-element">
-        <img src="https://yetion.ru:4433/files/standard.jpg">
-        <label class="name">Crutio Chell</label>
-        <label class="msg">You: Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's</label>
-    </div>
-    <div class="chat-element">
-        <img src="https://yetion.ru:4433/files/standard.jpg">
-        <label class="name">Crutio Chell</label>
-        <label class="msg">You: Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's</label>
-    </div>
-    <div class="chat-element">
-        <img src="https://yetion.ru:4433/files/standard.jpg">
-        <label class="name">Crutio Chell</label>
-        <label class="msg">You: Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's</label>
-    </div>
-    <div class="chat-element">
-        <img src="https://yetion.ru:4433/files/standard.jpg">
-        <div class="name">Crutio Chell</div>
-        <div class="msg">You: Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's</div>
-    </div>
 </div>
 
 <div class="current-chat">

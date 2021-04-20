@@ -87,9 +87,32 @@ def getDirectMessages(key, ip):
 
     dms = db_sess.query(directMessages).filter(directMessages.users.like(f"%{user.id},%")).all()
     for dm in dms:
-        content[dm.id] = jsonToDict(dm.content)
+        content[dm.id] = [dm.users.replace(f"{user.id},", ""), jsonToDict(dm.content)]
 
     result['content'] = content
+    return result
+
+
+def getUser(id):
+    result = {'result': 'successful', 'message': '', 'content': ''}
+    db_sess = db.create_session()
+    user = db_sess.query(User).filter(User.id == id).first()
+
+    if user is None:
+        result['result'] = 'error'
+        result['message'] = 'User does not exist'
+        return result
+
+    result['content'] = [
+        user.nickname,
+        user.name,
+        user.surname,
+        user.email,
+        user.friends,
+        user.anotherInfo,
+        user.id
+    ]
+
     return result
 
 
@@ -202,7 +225,16 @@ def loginUser(info, ip):
     session_key = genSessionKey(ip)
     result['content'] = [
         session_key,
-        user.anotherInfo
+        user.anotherInfo,
+        [
+            user.nickname,
+            user.name,
+            user.surname,
+            user.email,
+            user.friends,
+            user.anotherInfo,
+            user.id
+        ]
     ]
     user.session_key = session_key
 

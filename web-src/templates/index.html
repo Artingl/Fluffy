@@ -47,6 +47,7 @@
 {% if userToken %}
     <script>
         token = "{{ userToken }}";
+        me = JSON.parse({{me | tojson}})
     </script>
 {% endif %}
 

@@ -1,9 +1,11 @@
 let token = "";
+let me = {};
 
 let onReady = function () {
     let userMiniSettings = $(".userMiniSettings")
     let settingsForm = $(".settingsForm")
     let darkenBg = $(".darkenBg")
+    let lastChats = {}
 
     darkenBg.hide()
     settingsForm.hide()
@@ -15,9 +17,39 @@ let onReady = function () {
             type: "post",
             success: function (data) {
                 data = JSON.parse(data)
-                for (const msg in data['content'])
+                console.log(lastChats !== data)
+                console.log(lastChats)
+
+                if (lastChats != data)
                 {
-                    console.log(data['content'][msg])
+                    lastChats = data
+
+                    $('.chats').empty()
+                    $('.chats').append('<div style="margin-top: 20px;"></div>')
+                    for (const msg in data['content'])
+                    {
+                        let chatUsers = data['content'][msg][0].split(",")
+                        $.ajax({
+                            url: api + "/api/getUser/" + '{"id":"' + chatUsers[0] + '"}',
+                            type: "post",
+                            success: function (newData) {
+                                newData = JSON.parse(newData)
+                                let lastMsg = data['content'][msg].slice(-1)[0][0]
+                                let addToMsg = ""
+                                let linkToUserIcon = JSON.parse(newData['content'][5])['logo']
+
+                                if (lastMsg['fromUser'] == me[6]) {
+                                    addToMsg = "You: "
+                                }
+
+                                addChat(
+                                    "https://yetion.ru:4433/files/" + linkToUserIcon,
+                                    newData['content'][1] + " " + newData['content'][2],
+                                    addToMsg + lastMsg['content']
+                                )
+                            }
+                        });
+                    }
                 }
             }
         });
@@ -43,6 +75,10 @@ let onReady = function () {
 let changeHeaderUserIcon = function (path) {
     let userIcon = document.getElementById("userIcon");
     userIcon.src = api + "/files/" + path
+};
+
+let addChat = function (userIcon, name, lastMessage) {
+    $('.chats').append('<div class="chat-element"><img src="' + userIcon + '"><div class="name">' + name + '</div><div class="msg">' + lastMessage + '</div></div>');
 };
 
 let settings = function () {
