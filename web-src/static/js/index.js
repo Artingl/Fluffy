@@ -23,8 +23,7 @@ let onReady = function () {
 
                     $('.chats').empty()
                     $('.chats').append('<div style="margin-top: 20px;"></div>')
-                    for (const msg in data['content'])
-                    {
+                    for (const msg in data['content']) {
                         let chatUsers = data['content'][msg][0].split(",")
                         $.ajax({
                             url: api + "/api/getUser/" + '{"id":"' + chatUsers[0] + '"}',
@@ -41,7 +40,7 @@ let onReady = function () {
                                 }
 
                                 if (data['content'][msg][2]) {
-                                    title = data['content'][msg][3]
+                                    title = data['content'][msg][2]
                                 }
 
                                 addChat(
