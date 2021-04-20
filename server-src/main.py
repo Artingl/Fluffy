@@ -1,4 +1,6 @@
-from flask import Flask, request
+import os
+
+from flask import Flask, request, send_from_directory
 import db
 import user_functions
 from termcolor import colored
@@ -6,6 +8,15 @@ from include import *
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = ''
+
+
+@app.route("/userIcons/<string:path>")
+def userIcons(path):
+    folderPath = os.path.join(app.root_path, 'data/images')
+    if not os.path.isfile(folderPath + "/" + path):
+        path = "standard.jpg"
+
+    return send_from_directory(folderPath, path, mimetype='image/vnd.microsoft.icon')
 
 
 @app.route("/api/<string:req>/<string:data>", methods=['POST', 'GET'])
@@ -16,7 +27,7 @@ def apiPage(req, data):
         'message': 'An unknown error!',
         'content': ''
     }
-    
+
     try:
         if request.method == 'POST' and data:
             if req == "register":
@@ -62,6 +73,16 @@ def error_404(page):
     })
 
 
+@app.errorhandler(500)
+def error_500(page):
+    return dictToJson({
+        'result': 'error',
+        'message': 'Server error! Please, try again later.',
+        'content': ''
+    })
+
+
 if __name__ == '__main__':
     db.global_init('data/root.db')
-    app.run(port=8374, host='127.0.0.1')
+    app.run(port=4433, host='192.168.88.18',
+            ssl_context=('C:\\Certbot\\live\\yetion.ru\\fullchain.pem', 'C:\\Certbot\\live\\yetion.ru\\privkey.pem'))

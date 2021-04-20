@@ -1,14 +1,16 @@
 import json
+import os
 
 import flask
 import requests
-from flask import Flask, request, render_template, session
+from flask import Flask, request, render_template, session, send_from_directory
+from termcolor import colored
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '^-i>FKYS5(,dk.*RfA+.g8eaG3bVO4=?W,3Vi+GVGP[]+.+MHSgf.DEQ[B44NYcNaMiC<T8TWL-g`KW63nHnP[' \
                            'Mg`f>n.3-dP9KD/_*d6`m>G<bfdZ6_C7G`O]UAS-*MHK@mIVb/.BF1ST9]QV@aL_ce7DE*Ej`ZL]g?lCUN6QeS' \
                            '-`*4a(b,/V+5<Ij:7/@1[fj6A?Uk):n4(DM8P^)21FEAiG?NRX6ljll1LIENEYDnc(k/kJbe?:d7`jhj[BSD '
-apiServer = "http://127.0.0.1:8374"
+apiServer = "https://yetion.ru:4433"
 
 
 def postRequest(url, return_type='text'):
@@ -20,11 +22,14 @@ def postRequest(url, return_type='text'):
             return r.text
 
         return r
-    except:
+    except Exception as e:
+        print(colored("[ERROR]: " + str(e), 'red'))
+
         result = {
             'content': '',
             'result': 'error',
-            'message': 'An unknown error while connect to the API server!'
+            'message': 'An unknown error while connect to the API server!',
+            'serverError': True
         }
 
         return json.dumps(result) if return_type == 'text' else result
@@ -35,14 +40,23 @@ def checkSessionKey():
         sessionKey = session['session_key']
         req = json.dumps({'key': sessionKey})
         checkKey = postRequest(f"{apiServer}/api/checkSessionKey/{req}", "json")
-        if checkKey['message'] != 'Invalid key':
-            return True
+        if checkKey['result'] != 'error':
+            return [True, 200]
+        elif 'serverError' in checkKey:
+            return [False, 500]
 
-    return False
+    return [False, 200]
 
 
 def checkSessionDict(name):
     return name in session
+
+
+def page(name, **settings):
+    index = render_template("index.html", **settings)
+    pg = render_template(name, **settings)
+
+    return index + pg + '<script>onReady();</script>'
 
 
 @app.route("/", methods=['GET', 'POST'])
@@ -50,20 +64,33 @@ def rootPage():
     if request.method == 'POST':
         return json.dumps({'result': 'error', 'message': "An unknown error!"})
     else:
-        if not checkSessionDict('session_key'):
-            return flask.redirect("/login")
+        checkKey = checkSessionKey()
+
+        if not checkKey[0] and checkKey[1] == 200:
+            return flask.redirect("/logout")
+        elif checkKey[1] == 500:
+            return error_500(500)
         else:
             sessionKey = session['session_key']
-            if not checkSessionKey():
-                return flask.redirect("/logout")
-            print(postRequest(apiServer + "/api/createDirectMessage/" + '{"users":"1,2,10", "key":"' + sessionKey + '"}', 'json'))
+            userInfo = session['userInfo']
 
-            return render_template("main.html", pageName='main')
+            if 'logo' in userInfo:
+                userIcon = userInfo['logo']
+            else:
+                userIcon = 'standard.jpg'
+
+            return page("main.html", pageName='main', userInfo=userInfo, userIcon=userIcon, userToken=sessionKey)
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static/img'),
+                               'favicon.png', mimetype='image/vnd.microsoft.icon')
 
 
 @app.route("/login", methods=['POST', 'GET'])
 def login():
-    if checkSessionKey():
+    if checkSessionKey()[0]:
         return flask.redirect("/")
 
     if request.method == 'POST':
@@ -73,16 +100,17 @@ def login():
         if apiResponse['result'] == "error":
             return flask.redirect(f"/login?error_msg={apiResponse['message']}")
         else:
-            session['session_key'] = apiResponse["content"]
+            session['session_key'] = apiResponse["content"][0]
+            session['userInfo'] = apiResponse["content"][1]
             return flask.redirect("/")
 
     error = request.args.get("error_msg")
-    return render_template("login.html", pageName='Login', msgs=error)
+    return page("login.html", pageName='Login', msgs=error, disableHeader=True)
 
 
 @app.route("/register", methods=['POST', 'GET'])
 def register():
-    if checkSessionKey():
+    if checkSessionKey()[0]:
         return flask.redirect("/")
 
     if request.method == 'POST':
@@ -107,12 +135,14 @@ def register():
             session['session_key'] = apiResponse["content"]
             req = json.dumps({'email': request.form.get('email'), 'password': request.form.get('password')})
             apiResponse = dict(postRequest(f"{apiServer}/api/login/{req}", "json"))
-            session['session_key'] = apiResponse["content"]
+
+            session['session_key'] = apiResponse["content"][0]
+            session['userInfo'] = apiResponse["content"][1]
 
             return flask.redirect("/")
 
     error = request.args.get("error_msg")
-    return render_template("register.html", pageName='Register', msgs=error)
+    return page("register.html", pageName='Register', msgs=error, disableHeader=True)
 
 
 @app.route("/logout", methods=['POST', 'GET'])
@@ -123,5 +153,13 @@ def logout():
     return flask.redirect("/login")
 
 
+@app.errorhandler(500)
+def error_500(err):
+    return render_template("serverError.html", errorTitle="Server error!",
+                           errorMessage="Unknown server error while executing your request. Please, try again later.",
+                           errorCode=500)
+
+
 if __name__ == '__main__':
-    app.run(port=80, host='127.0.0.1')
+    app.run(port=443, host='192.168.88.18',
+            ssl_context=('C:\\Certbot\\live\\yetion.ru\\fullchain.pem', 'C:\\Certbot\\live\\yetion.ru\\privkey.pem'))

@@ -200,7 +200,10 @@ def loginUser(info, ip):
         return result
 
     session_key = genSessionKey(ip)
-    result['content'] = session_key
+    result['content'] = [
+        session_key,
+        user.anotherInfo
+    ]
     user.session_key = session_key
 
     db_sess.add(user)

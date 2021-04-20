@@ -1,37 +1,113 @@
-{% extends "index.html" %}
+<style>
+    .background img {
+        filter: blur(5px) brightness(50%);
+            -webkit-filter: blur(5px) brightness(50%);
+            -moz-filter: blur(5px) brightness(50%);
+            -o-filter: blur(5px) brightness(50%);
+            -ms-filter: blur(5px);
+        margin: -5px -10px -10px -5px;
 
+        width: 110%;
+        height: 110%;
+        object-fit: cover;
+    }
 
-{% block content %}
+    .background {
+        overflow: hidden;
+        z-index: -999;
+        width: 100%;
+        height: 100%;
+    }
+
+    .register-form {
+        background-color: white;
+        border-radius: 16px;
+        box-shadow: 0 0 60px rgba(0,0,0,0.2);
+        width: 390px;
+        height: 580px;
+
+        position: absolute;
+        z-index: 15;
+        top: 50%;
+        left: 50%;
+        margin: -270px 0 0 -195px;
+    }
+
+    .form-control {
+        width: 80%;
+        height: 35px;
+        margin-left: 10%;
+    }
+
+    .form-control-label {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 300;
+        margin-left: 10%;
+        margin-top: 15px;
+    }
+
+    .btn-register {
+        width: 100px;
+        margin-top: 30px;
+        margin-left: calc(50% - 50px);
+    }
+
+    .err-dialog {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        text-align: center;
+
+        z-index: 15;
+        position: absolute;
+        width: 390px;
+        height: 60px;
+
+        top: 50%;
+        left: 50%;
+        margin: -350px 0 0 -195px;
+        border-radius: 16px;
+    }
+</style>
+
+<div class="background"><img src="static/img/bg.jpg"/></div>
+
+{% if msgs %}
+    <div class="alert alert-danger err-dialog" role="alert">
+        {{ msgs }}
+    </div>
+{% endif %}
+
+<div class="register-form">
     <form action="/register" method="POST">
+      <br>
       <div class="form-group">
-        <label for="email">Email address</label>
+        <label for="email" class="form-control-label">Email address</label>
         <input type="email" class="form-control" id="email" name="email" aria-describedby="email" placeholder="Enter email">
       </div>
       <div class="form-group">
-        <label for="text-nickname">Nickname</label>
+        <label for="text-nickname" class="form-control-label">Nickname</label>
         <input type="text" class="form-control" id="text-nickname" name="text-nickname" aria-describedby="text" placeholder="Nickname">
       </div>
       <div class="form-group">
-        <label for="text-name">Name</label>
+        <label for="text-name" class="form-control-label">Name</label>
         <input type="text" class="form-control" id="text-name" name="text-name" aria-describedby="text" placeholder="Name">
       </div>
       <div class="form-group">
-        <label for="text-surname">Surname</label>
+        <label for="text-surname" class="form-control-label">Surname</label>
         <input type="text" class="form-control" id="text-surname" name="text-surname" aria-describedby="text" placeholder="Surname">
       </div>
       <div class="form-group">
-        <label for="password">Password</label>
+        <label for="password" class="form-control-label">Password</label>
         <input type="password" class="form-control" id="password" name="password" placeholder="Password">
       </div>
       <div class="form-group">
-        <label for="password2">Repeat password</label>
+        <label for="password2" class="form-control-label">Repeat password</label>
         <input type="password" class="form-control" id="password2" name="password2" placeholder="Repeat password">
       </div>
       <!--<div class="form-check">
         <input type="checkbox" class="form-check-input" id="exampleCheck1">
         <label class="form-check-label" for="exampleCheck1">Check me out</label>
       </div>-->
-      <button type="submit" class="btn btn-primary">Submit</button>
+      <button type="submit" class="btn btn-primary btn-register">Register</button>
     </form>
-
-{% endblock %}
+</div>
