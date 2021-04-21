@@ -134,7 +134,7 @@ def register():
 
     if request.method == 'POST':
         if request.form.get('password') != request.form.get('password2'):
-            return flask.redirect(f"/register?error_msg=Password mismatch")
+            return flask.redirect(f"/register?error_msg=Passwords mismatch")
 
         if len(request.form.get('password')) < 8:
             return flask.redirect(f"/register?error_msg=Password must be more then 8 characters")

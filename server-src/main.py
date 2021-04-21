@@ -89,4 +89,5 @@ def error_500(page):
 
 if __name__ == '__main__':
     db.global_init('data/root.db')
-    app.run(port=4433, host='127.0.0.1')
+    app.run(port=4433, host='192.168.88.18',
+            ssl_context=('C:\\Certbot\\live\\yetion.ru\\fullchain.pem', 'C:\\Certbot\\live\\yetion.ru\\privkey.pem'))

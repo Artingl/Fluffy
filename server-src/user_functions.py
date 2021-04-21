@@ -59,7 +59,7 @@ def addDirectMessage(files, message, chatId, key, ip):
 
     content = jsonToDict(dm.content)
     if len(list(content.keys())) == 0:
-        messageId = 1
+        messageId = 0
     else:
         messageId = int(list(content.keys())[-1]) + 1
 
