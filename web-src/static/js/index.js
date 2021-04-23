@@ -12,6 +12,7 @@ let onReady = function () {
     let darkenBg = $(".darkenBg")
     let current_chat_content = $(".current-chat-content")
     let fullscreen_alertbox = $(".fullscreen-alertbox")
+    let context_menu = $('.context-menu')
     let lastChats = {}
 
     $('*').on('keydown', function(event) {
@@ -20,11 +21,18 @@ let onReady = function () {
         }
     })
 
+    context_menu.hide()
     fullscreen_alertbox.hide()
     current_chat_content.hide()
     darkenBg.hide()
     settingsForm.hide()
     userMiniSettings.hide()
+
+    $(document).bind("mousedown", function (e) {
+        if (!$(e.target).parents('.context-menu').length > 0 && e.which !== 3) {
+            $('.context-menu').fadeOut(100);
+        }
+    });
 
     // LOOP
     setInterval(function () {
@@ -46,6 +54,8 @@ let onReady = function () {
             type: "post",
             success: function (dataStr) {
                 let data = JSON.parse(dataStr)
+                let keys = data['content'][0]
+                data['content'] = data['content'][1]
 
                 if (lastChats !== dataStr) {
                     lastChats = dataStr
@@ -53,65 +63,68 @@ let onReady = function () {
                     $('.chats').empty()
                     $('.chats').append('<div style="margin-top: 20px;"></div>')
                     chatsInfo = {}
-                    for (const msg in data['content']) {
-                        let chatUsers = data['content'][msg][0].split(",")
-                        $.ajax({
-                            url: api + "/api/getUser/" + '{"id":"' + chatUsers[0] + '"}',
-                            type: "post",
-                            success: function (newData) {
-                                newData = JSON.parse(newData)
-                                let lastMsg = ""
-                                if (data['content'][msg][2] !== {}) {
-                                    lastMsg = data['content'][msg][2][Object.keys(data['content'][msg][2]).length - 1]
-                                }
-
-                                let addToMsg = ""
-                                let title = newData['content'][1] + " " + newData['content'][2]
-                                let linkToUserIcon = JSON.parse(newData['content'][5])['logo']
-                                let result = ""
-
-                                if (data['content'][msg][1]['logo']) {
-                                    linkToUserIcon = data['content'][msg][1]['logo']
-                                }
-
-                                if (lastMsg) {
-                                    if (lastMsg['fromUser'] == me[6]) {
-                                        addToMsg = "You: "
+                    keys.split(",").forEach( function( msg ) {
+                        if (msg && data['content'][msg])
+                        {
+                            let chatUsers = data['content'][msg][0].split(",")
+                            $.ajax({
+                                url: api + "/api/getUser/" + '{"id":"' + chatUsers[0] + '"}',
+                                type: "post",
+                                success: function (newData) {
+                                    newData = JSON.parse(newData)
+                                    let lastMsg = ""
+                                    if (data['content'][msg][2] !== {}) {
+                                        lastMsg = data['content'][msg][2][Object.keys(data['content'][msg][2]).length - 1]
                                     }
-                                    result = addToMsg + lastMsg['content']
-                                    if (data['content'][msg][1]['state'] === 'typing...') {
-                                        result = 'typing...'
+
+                                    let addToMsg = ""
+                                    let title = newData['content'][1] + " " + newData['content'][2]
+                                    let linkToUserIcon = JSON.parse(newData['content'][5])['logo']
+                                    let result = ""
+
+                                    if (data['content'][msg][1]['logo']) {
+                                        linkToUserIcon = data['content'][msg][1]['logo']
+                                    }
+
+                                    if (lastMsg) {
+                                        if (lastMsg['fromUser'] == me[6]) {
+                                            addToMsg = "You: "
+                                        }
+                                        result = addToMsg + lastMsg['content']
+                                        if (data['content'][msg][1]['state'].endsWith('typing...')) {
+                                            result = data['content'][msg][1]['state']
+                                        }
+                                    }
+
+                                    if (data['content'][msg][1]['title']) {
+                                        title = data['content'][msg][1]['title']
+                                    }
+
+                                    chatsInfo[msg] = {'title': title, 'icon': linkToUserIcon}
+
+                                    if (selectedChat) {
+                                        $('.chat-info-name').val(title)
+                                        changeUserIcon(linkToUserIcon, "chat-info-img")
+                                        openChat(selectedChat)
+                                    }
+
+                                    addChat(
+                                        api + "/files/" + linkToUserIcon,
+                                        title,
+                                        result,
+                                        msg
+                                    )
+
+                                    if (result.endsWith('typing...')) {
+                                        $('.chat-element_msg-id_' + msg).css('color', 'rgb(243 172 43)')
+                                    }
+                                    else {
+                                        $('.chat-element_msg-id_' + msg).css('color', '#404040')
                                     }
                                 }
-
-                                if (data['content'][msg][1]['title']) {
-                                    title = data['content'][msg][1]['title']
-                                }
-
-                                chatsInfo[msg] = {'title': title, 'icon': linkToUserIcon}
-
-                                if (selectedChat) {
-                                    $('.chat-info-name').val(title)
-                                    changeUserIcon(linkToUserIcon, "chat-info-img")
-                                    openChat(selectedChat)
-                                }
-
-                                addChat(
-                                    api + "/files/" + linkToUserIcon,
-                                    title,
-                                    result,
-                                    msg
-                                )
-
-                                if (result === 'typing...') {
-                                    $('.chat-element_msg-id_' + msg).css('color', 'rgb(243 172 43)')
-                                }
-                                else {
-                                    $('.chat-element_msg-id_' + msg).css('color', '#404040')
-                                }
-                            }
-                        });
-                    }
+                            });
+                        }
+                    })
                 }
 
                 $('.loading').fadeOut(250)
@@ -145,6 +158,8 @@ let openChat = function (_id) {
         type: "post",
         success: function (dataStr) {
             let data = JSON.parse(dataStr)
+            let keys = data['content'][0]
+            data['content'] = data['content'][1]
             let content = data['content']
 
             if (!content[_id]) return;
@@ -216,6 +231,25 @@ let openChat = function (_id) {
                     '<img src="' + api + '/files/' + icon + '">\n' +
                     '<span>' + time + '</span></div>')
 
+                $('.msg-chat-n_' + msgInt).bind("contextmenu", function (event) {
+                    event.preventDefault();
+                    $('.context-menu').empty()
+                    $('.context-menu').append('<div style="margin-top: 10px;"></div>')
+                    $('.context-menu').append('<button onclick="" type="button" class="blueButton button btn-context">Reply</button>')
+
+                    if (msg['fromUser'][6] === me[6]) {
+                        $('.context-menu').append('<button onclick="" type="button" class="blueButton button btn-context">Edit message</button>')
+                        $('.context-menu').append('<button onclick="" type="button" class="redButton button btn-context">Delete message</button>')
+                    }
+
+                    $('.context-menu').append('<div style="margin-top: 10px;"></div>')
+                    if (!$('.context-menu').is(":visible")) {
+                        $('.context-menu').fadeIn(100)
+                    }
+                    $(".context-menu").css('top', event.pageY + "px")
+                    $(".context-menu").css('left', event.pageX + "px")
+                });
+
                 lastChatId = msgInt;
             }
 
@@ -262,24 +296,12 @@ let timeConverter = function (UNIX_timestamp){
 }
 
 let sendMessage = function (ele) {
-    $.ajax({
-        url: api + '/api/updateDirectMessageInfo/' + '{"key":"' + token + '", "id":"' + selectedChat + '", "data":{"state":"typing..."}}',
-        type: 'post',
-        success: function (dataStr) {
-            if (typingTimer) {
-                clearTimeout(typingTimer)
-                typingTimer = 0
-            }
-            typingTimer = setTimeout(function () {
-                $.ajax({
-                    url: api + '/api/updateDirectMessageInfo/' + '{"key":"' + token + '", "id":"' + selectedChat + '", "data":{"state":""}}',
-                    type: 'post'
-                })
-            }, 2000)
-        }
-    })
-
     if (ele === "send" || event.key === 'Enter') {
+        $.ajax({
+            url: api + '/api/updateDirectMessageInfo/' + '{"key":"' + token + '", "id":"' + selectedChat + '", "data":{"state":""}}',
+            type: 'post'
+        })
+
         let value = $('.message-area').val().trim()
         if (value.length > 2000) {
             showAlertBox("You cannot type message more then 2000 chars!", "error")
@@ -307,7 +329,7 @@ let sendMessage = function (ele) {
                         }
                     }
 
-                    $('.current-chat-messages').append('<div class="msg-chat msg-chat-n_' + lastChatId + '" style="width: ' + size + 'px;">\n' +
+                    $('.current-chat-messages').append('<div class="msg-chat msg-chat-n_' + lastChatId + '" style="width: ' + size + 'px; background-color: #dedede;">\n' +
                         '<p>' + value + '</p>\n' +
                         '<img src="' + api + '/files/' + icon + '">\n' +
                         '<span>' + time + '</span></div>')
@@ -315,6 +337,18 @@ let sendMessage = function (ele) {
                 }
             })
         }
+    }
+    else {
+        let name = me[0].slice(0, 9)
+        name = name.charAt(0).toUpperCase() + name.slice(1);
+        if (me[0].length > 9) {
+            name += '.'
+        }
+
+        $.ajax({
+            url: api + '/api/updateDirectMessageInfo/' + '{"key":"' + token + '", "id":"' + selectedChat + '", "data":{"state":"' + name + ' typing..."}}',
+            type: 'post'
+        })
     }
 };
 

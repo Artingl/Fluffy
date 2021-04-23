@@ -250,7 +250,7 @@
         border-radius: 16px;
         border: 0 transparent;
         outline: none;
-        background-color: #ffffff;
+        background-color: transparent;
 
         font-family: 'Roboto', sans-serif;
         font-size: 16px;
@@ -341,6 +341,16 @@
         left: 110px;
     }
 
+    .context-menu {
+        background-color: white;
+        border-radius: 16px;
+        box-shadow: 0 0 60px rgba(0,0,0,0.2);
+        width: 200px;
+        position: absolute;
+        z-index: 150;
+        font-family: 'Roboto', sans-serif;
+    }
+
 </style>
 
 <div class="settingsForm">
@@ -372,14 +382,18 @@
     <div style="margin-top: 20px;"></div>
 </div>
 
-<div class="current-chat">
+<div class="context-menu">
+
+</div>
+
+<div class="current-chat" style="background-color: #fafafa">
 
     <div class="current-chat-empty">
         <label class="current-chat-empty-label">Open any chat</label>
     </div>
 
-    <div class="current-chat-content">
-        <div class="chat-info">
+    <div class="current-chat-content" style="background-color: #ffffff">
+        <div class="chat-info" style="background-color: #fafafa">
             <img class="chat-info-img" id="chat-info-img" src="static/img/bg.jpg">
             <input onchange="uploadChatImage(this)" class="chat-info-img-file" id="chat-info-img-file" type="file" size="48" accept="image/*">
             <input onkeydown="changeChatName(this)" type="text" class="chat-info-name" id="chat-info-name">

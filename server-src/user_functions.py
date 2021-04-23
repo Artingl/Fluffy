@@ -11,6 +11,10 @@ from include import dictToJson, jsonToDict
 from users import *
 
 
+def resetState(chatId):
+    pass
+
+
 def updateDirectMessageInfo(data, chatId, key, ip):
     result = {'result': 'successful', 'message': 'Direct message info was updated successfully!', 'content': ''}
     db_sess = db.create_session()
@@ -31,6 +35,8 @@ def updateDirectMessageInfo(data, chatId, key, ip):
     content = json.loads(dm.info)
     for key, val in data.items():
         content[key] = val
+        if key == "state":
+            pass
         if key == "title":
             addDirectMessage({}, user.nickname + " has changed channel name to " + val, chatId,
                              "f528764d624db129b32c21fbca0cb8d6_QVWTF7FSSNLJAW72SEJK6Q2JE655WMIYG4A987LOGFXGL0JL",
@@ -137,7 +143,6 @@ def changeImageDirectMessage(file, chatId, key, ip):
     return result
 
 
-
 def getDirectMessages(key, ip):
     result = {'result': 'successful', 'message': '', 'content': ''}
     content = {}
@@ -149,11 +154,22 @@ def getDirectMessages(key, ip):
         result['message'] = 'Invalid session key!'
         return result
 
-    dms = db_sess.query(directMessages).filter(directMessages.users.like(f"%{user.id},%")).all()
+    dmsd = db_sess.query(directMessages).filter(directMessages.users.like(f"%{user.id},%")).all()
+    dms = []
+    dms_time = []
+    for e, dm in enumerate(dmsd):
+        cnt = jsonToDict(dm.content)
+        dms_time.append((e, cnt[str(len(cnt) - 1)]['time']))
+    dms_time.sort(key=lambda x: x[1], reverse=True)
+    for e, i in dms_time:
+        dms.append(dmsd[e])
+
+    keys = ""
     for dm in dms:
         content[dm.id] = [dm.users.replace(f"{user.id},", ""), jsonToDict(dm.info), jsonToDict(dm.content)]
+        keys += str(dm.id) + ","
 
-    result['content'] = content
+    result['content'] = [keys, content]
     return result
 
 
