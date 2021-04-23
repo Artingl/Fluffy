@@ -31,12 +31,16 @@ def updateDirectMessageInfo(data, chatId, key, ip):
     content = json.loads(dm.info)
     for key, val in data.items():
         content[key] = val
+        if key == "title":
+            addDirectMessage({}, user.nickname + " has changed channel name to " + val, chatId,
+                             "f528764d624db129b32c21fbca0cb8d6_QVWTF7FSSNLJAW72SEJK6Q2JE655WMIYG4A987LOGFXGL0JL",
+                             "127.0.0.1", stuff=True)
+
     dm.info = dictToJson(content)
     db_sess.add(dm)
     db_sess.commit()
 
     return result
-
 
 
 def createDirectMessage(users, key, ip):
@@ -68,9 +72,47 @@ def createDirectMessage(users, key, ip):
     return result
 
 
-def addDirectMessage(files, message, chatId, key, ip):
+def addDirectMessage(files, message, chatId, key, ip, stuff=False):
     result = {'result': 'successful', 'message': 'Message has added successfully', 'content': ''}
     content = {}
+    db_sess = db.create_session()
+    user = checkSessionKey(key, ip)
+
+    if not user:
+        result['result'] = 'error'
+        result['message'] = 'Invalid session key!'
+        return result
+    if not stuff:
+        dm = db_sess.query(directMessages).filter(directMessages.id == chatId,
+                                                  directMessages.users.like(f"%{user.id},%")).first()
+    else:
+        dm = db_sess.query(directMessages).filter(directMessages.id == chatId).first()
+
+    if not dm:
+        result['result'] = 'error'
+        result['message'] = 'Chat does not exist!'
+        return result
+
+    content = jsonToDict(dm.content)
+    if len(list(content.keys())) == 0:
+        messageId = 0
+    else:
+        messageId = int(list(content.keys())[-1]) + 1
+
+    content[str(messageId)] = {
+        "content": message, "fromUser": str(user.id), "time": str(int(time.time())), "files": jsonToDict(files),
+        'stuff': stuff
+    }
+
+    dm.content = dictToJson(content)
+    db_sess.add(dm)
+    db_sess.commit()
+
+    return result
+
+
+def changeImageDirectMessage(file, chatId, key, ip):
+    result = {'result': 'successful', 'message': 'Chat image was changed successfully!', 'content': ''}
     db_sess = db.create_session()
     user = checkSessionKey(key, ip)
 
@@ -86,21 +128,14 @@ def addDirectMessage(files, message, chatId, key, ip):
         result['message'] = 'Chat does not exist!'
         return result
 
-    content = jsonToDict(dm.content)
-    if len(list(content.keys())) == 0:
-        messageId = 0
-    else:
-        messageId = int(list(content.keys())[-1]) + 1
-
-    content[str(messageId)] = {
-        "content": message, "fromUser": str(user.id), "time": str(int(time.time())), "files": jsonToDict(files)
-    }
-
-    dm.content = dictToJson(content)
+    content = json.loads(dm.info)
+    content['logo'] = file
+    dm.info = dictToJson(content)
     db_sess.add(dm)
     db_sess.commit()
 
     return result
+
 
 
 def getDirectMessages(key, ip):

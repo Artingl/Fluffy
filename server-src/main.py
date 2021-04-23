@@ -1,6 +1,10 @@
 import os
+import random
+import string
 
 from flask import Flask, request, send_from_directory
+from werkzeug.utils import secure_filename
+
 import db
 import user_functions
 from termcolor import colored
@@ -11,6 +15,35 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 app.config['SECRET_KEY'] = ''
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
+
+def genFileName(ext):
+    name = ''
+    while True:
+        name = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(48)) + ext
+        if not os.path.isfile('data/images/' + name):
+            break
+    return name
+
+
+@app.route('/fileUpload/changeChatIcon/<string:data>', methods=['GET', 'POST'])
+def filesUpls(data):
+    data = jsonToDict(data)
+    response = {
+        'result': 'error',
+        'message': 'An unknown error!'
+    }
+    try:
+        file = request.files['file']
+        filename = secure_filename(file.filename)
+        name = genFileName("." + filename.split(".")[-1])
+        file.save(os.path.join(app.root_path, 'data/images/' + name))
+        response = user_functions.changeImageDirectMessage(name, data['id'], data['token'], request.remote_addr)
+    except Exception as e:
+        print(colored(f'[ERROR]: {e}', 'red'))
+
+    return dictToJson(response)
 
 
 @app.route("/files/<string:path>")

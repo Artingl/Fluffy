@@ -70,11 +70,18 @@ let onReady = function () {
                                 let linkToUserIcon = JSON.parse(newData['content'][5])['logo']
                                 let result = ""
 
+                                if (data['content'][msg][1]['logo']) {
+                                    linkToUserIcon = data['content'][msg][1]['logo']
+                                }
+
                                 if (lastMsg) {
                                     if (lastMsg['fromUser'] == me[6]) {
                                         addToMsg = "You: "
                                     }
                                     result = addToMsg + lastMsg['content']
+                                    if (data['content'][msg][1]['state'] === 'typing...') {
+                                        result = 'typing...'
+                                    }
                                 }
 
                                 if (data['content'][msg][1]['title']) {
@@ -95,6 +102,13 @@ let onReady = function () {
                                     result,
                                     msg
                                 )
+
+                                if (result === 'typing...') {
+                                    $('.chat-element_msg-id_' + msg).css('color', 'rgb(243 172 43)')
+                                }
+                                else {
+                                    $('.chat-element_msg-id_' + msg).css('color', '#404040')
+                                }
                             }
                         });
                     }
@@ -177,10 +191,17 @@ let openChat = function (_id) {
                 let time = timeConverter(parseInt(msg['time']))
                 let icon = 'standard.jpg'
                 let size = 200
+                let tag = ''
                 let msgSize = msg['content'].length
 
-                if (JSON.parse(currentChatUsers[msg['fromUser']][5])['logo']) {
-                    icon = JSON.parse(currentChatUsers[msg['fromUser']][5])['logo']
+                if (!msg['stuff']) {
+                    if (JSON.parse(currentChatUsers[msg['fromUser']][5])['logo']) {
+                        icon = JSON.parse(currentChatUsers[msg['fromUser']][5])['logo']
+                    }
+                }
+                else {
+                    icon = 'yetion_logo.png'
+                    tag = 'background-color: #c2dfff;'
                 }
 
                 if (msgSize * 8 > 200) {
@@ -190,7 +211,7 @@ let openChat = function (_id) {
                     }
                 }
 
-                $('.current-chat-messages').append('<div class="msg-chat msg-chat-n_' + msgInt + '" style="width: ' + size + 'px;">\n' +
+                $('.current-chat-messages').append('<div class="msg-chat msg-chat-n_' + msgInt + '" style="width: ' + size + 'px;' + tag + '">\n' +
                     '<p>' + msg['content'] + '</p>\n' +
                     '<img src="' + api + '/files/' + icon + '">\n' +
                     '<span>' + time + '</span></div>')
@@ -241,6 +262,23 @@ let timeConverter = function (UNIX_timestamp){
 }
 
 let sendMessage = function (ele) {
+    $.ajax({
+        url: api + '/api/updateDirectMessageInfo/' + '{"key":"' + token + '", "id":"' + selectedChat + '", "data":{"state":"typing..."}}',
+        type: 'post',
+        success: function (dataStr) {
+            if (typingTimer) {
+                clearTimeout(typingTimer)
+                typingTimer = 0
+            }
+            typingTimer = setTimeout(function () {
+                $.ajax({
+                    url: api + '/api/updateDirectMessageInfo/' + '{"key":"' + token + '", "id":"' + selectedChat + '", "data":{"state":""}}',
+                    type: 'post'
+                })
+            }, 2000)
+        }
+    })
+
     if (ele === "send" || event.key === 'Enter') {
         let value = $('.message-area').val().trim()
         if (value.length > 2000) {
@@ -286,7 +324,7 @@ let changeUserIcon = function (path, _id) {
 };
 
 let addChat = function (userIcon, name, lastMessage, _id) {
-    $('.chats').append('<div onClick="openChat(' + _id + ')" class="chat-element chat-element-id_' + _id + '"><img src="' + userIcon + '"><div class="name">' + name + '</div><div class="msg">' + lastMessage + '</div></div>');
+    $('.chats').append('<div onClick="openChat(' + _id + ')" class="chat-element chat-element-id_' + _id + '"><img src="' + userIcon + '"><div class="name chat-element_name-id_' + _id + '">' + name + '</div><div class="msg chat-element_msg-id_' + _id + '">' + lastMessage + '</div></div>');
 };
 
 let showAlertBox = function (message, type) {
@@ -300,7 +338,7 @@ let showAlertBox = function (message, type) {
     fullscreen_alertbox.empty()
     fullscreen_alertbox.append(icon)
     fullscreen_alertbox.append('<p>' + message + '</p>')
-    fullscreen_alertbox.append('<input onClick="hideAlertBox()" type="button" class="btn btn-primary" style="margin-top: 25px;" value="OK">')
+    fullscreen_alertbox.append('<input onClick="hideAlertBox()" type="button" class="btn btn-primary" style="margin-top: 12px;" value="OK">')
 
     $('.darkenBg').fadeIn(250)
     fullscreen_alertbox.fadeIn(250, function () {
@@ -316,16 +354,26 @@ let hideAlertBox = function () {
     })
 };
 
+let uploadChatImage = async function (inp) {
+    let formData = new FormData();
+    formData.append("file", inp.files[0]);
+    await fetch(api + '/fileUpload/changeChatIcon/' + '{"token":"' + token + '", "id":"' + selectedChat + '"}', {method: "POST", body: formData});
+}
+
 let settings = function () {
     let settingsForm = $(".settingsForm")
     let darkenBg = $(".darkenBg")
 
     if(settingsForm.is(":visible")) {
-        settingsForm.fadeOut(250)
+        settingsForm.fadeOut(250, function () {
+            currentEscEvent = false
+        })
         darkenBg.fadeOut(250)
     }
     else {
-        settingsForm.fadeIn(250)
+        settingsForm.fadeIn(250, function () {
+            currentEscEvent = settings
+        })
         darkenBg.fadeIn(250)
     }
 

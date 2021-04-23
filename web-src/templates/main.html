@@ -228,13 +228,17 @@
         height: 80px;
     }
 
-    .chat-info-img {
+    .chat-info-img, .chat-info-img-file {
         position: absolute;
         top: 16px;
         left: 64px;
         width: 48px;
         height: 48px;
-        border-radius: 16px;
+        border-radius: 48px;
+    }
+
+    .chat-info-img-file {
+        opacity: 0;
     }
 
     .chat-info-name {
@@ -313,9 +317,42 @@
         margin-top: 18px;
     }
 
+    .user-icon-settings {
+        position: absolute;
+        float: left;
+        top: 20px;
+        left: 30px;
+    }
+
+    .user-icon-settings img {
+        width: 58px;
+        height: 58px;
+        border-radius: 58px;
+    }
+
+    .nameSettings {
+        position: absolute;
+        font-family: 'Roboto', sans-serif;
+        font-size: 20px;
+        font-weight: 400;
+
+        float: left;
+        top: 34px;
+        left: 110px;
+    }
+
 </style>
 
-<div class="settingsForm"></div>
+<div class="settingsForm">
+    <div class="user-icon-settings"><img id="userIconSettings" style="pointer-events: none;"></div>
+    <script>
+        changeUserIcon("{{ userIcon }}", "userIconSettings");
+    </script>
+    <div class="nameSettings">{{ meList[1] }} {{ meList[2] }}</div>
+    <div style="margin-top: 80px;"></div>
+    <div style="position: absolute; margin-top: 15px; margin-left: 10%; border-radius: 100px; width: 80%; height: 2px; background-color: #cfcfcf;"></div>
+</div>
+
 <div class="fullscreen-alertbox"></div>
 
 <div class="userMiniSettings" id="userMiniSettings">
@@ -344,6 +381,7 @@
     <div class="current-chat-content">
         <div class="chat-info">
             <img class="chat-info-img" id="chat-info-img" src="static/img/bg.jpg">
+            <input onchange="uploadChatImage(this)" class="chat-info-img-file" id="chat-info-img-file" type="file" size="48" accept="image/*">
             <input onkeydown="changeChatName(this)" type="text" class="chat-info-name" id="chat-info-name">
         </div>
         <div class="current-chat-messages" id="current-chat-messages"></div>

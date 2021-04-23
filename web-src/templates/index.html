@@ -42,6 +42,17 @@
         z-index: 100;
         position: absolute;
     }
+
+    .website-logo {
+        position: absolute;
+        top: 3px;
+        left: 10px;
+    }
+
+    .website-logo img {
+        width: 107px;
+        height: 53px;
+    }
 </style>
 
 {% if userToken %}
@@ -53,6 +64,7 @@
 
 {% if not disableHeader %}
     <div class="header">
+        <div class="website-logo"><img src="static/img/logo.png"></div>
         {% if userInfo %}
             <div class="user-icon"><img id="userIcon" style="pointer-events: none;"></div>
             <script>
