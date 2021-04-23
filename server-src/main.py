@@ -59,6 +59,8 @@ def apiPage(req, data):
                                                            data['key'], request.remote_addr)
             elif req == "createDirectMessage":
                 response = user_functions.createDirectMessage(data['users'], data['key'], request.remote_addr)
+            elif req == "updateDirectMessageInfo":
+                response = user_functions.updateDirectMessageInfo(data['data'], data['id'], data['key'], request.remote_addr)
             else:
                 response['message'] = f'Api method {req} does not exists!'
         elif request.method == 'GET':

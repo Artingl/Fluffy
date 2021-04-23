@@ -1,4 +1,5 @@
 import hashlib
+import json
 import random
 import string
 import time
@@ -8,6 +9,34 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from directMessages import directMessages
 from include import dictToJson, jsonToDict
 from users import *
+
+
+def updateDirectMessageInfo(data, chatId, key, ip):
+    result = {'result': 'successful', 'message': 'Direct message info was updated successfully!', 'content': ''}
+    db_sess = db.create_session()
+    user = checkSessionKey(key, ip)
+
+    if not user:
+        result['result'] = 'error'
+        result['message'] = 'Invalid session key!'
+        return result
+
+    dm = db_sess.query(directMessages).filter(directMessages.id == chatId,
+                                              directMessages.users.like(f"%{user.id},%")).first()
+    if not dm:
+        result['result'] = 'error'
+        result['message'] = 'Chat does not exist!'
+        return result
+
+    content = json.loads(dm.info)
+    for key, val in data.items():
+        content[key] = val
+    dm.info = dictToJson(content)
+    db_sess.add(dm)
+    db_sess.commit()
+
+    return result
+
 
 
 def createDirectMessage(users, key, ip):
