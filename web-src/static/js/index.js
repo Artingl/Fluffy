@@ -112,7 +112,7 @@ let onReady = function () {
                                         linkToUserIcon = data['content'][msg][1]['logo']
                                     }
 
-                                    if (lastMsg) {
+                                    if (lastMsg && lastMsg['content']) {
                                         if (lastMsg['fromUser'] == me[6]) {
                                             addToMsg = "You: "
                                         }
@@ -183,6 +183,7 @@ let openChat = function (_id) {
         url: api + "/api/getDirectMessages/" + '{"key":"' + token + '"}',
         type: "post",
         success: function (dataStr) {
+            replyMessage = [-1]
             let data = JSON.parse(dataStr)
             let keys = data['content'][0]
             data['content'] = data['content'][1]
@@ -241,7 +242,7 @@ let openChat = function (_id) {
                      time = time + " (edited)"
                 }
 
-                if (parseInt(msg['reply']) !== -1 && msg['reply']) {
+                if (parseInt(msg['reply']) !== -1 && msg['reply'] && msg['reply'] !== undefined && msg['reply'] !== 'undefined' && content[_id][2][msg['reply']]) {
                     let r = content[_id][2][msg['reply']]
                     let m = r['content']
                     if (m.length > 50) {

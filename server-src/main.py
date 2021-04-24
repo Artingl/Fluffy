@@ -83,49 +83,49 @@ def apiPage(req, data):
         'content': ''
     }
 
-    try:
-        if request.method == 'POST' and data:
-            if req == "register":
-                response = user_functions.registerUser(data)
-            elif req == "login":
-                response = user_functions.loginUser(data, request.remote_addr)
-            elif req == "checkSessionKey":
-                k = user_functions.checkSessionKey(data['key'], request.remote_addr)
-                if k:
-                    k = True
-                    response['result'] = 'successful'
-                    response['message'] = ''
-                else:
-                    response['message'] = 'Invalid key'
-                response['content'] = k
-            elif req == "getFriendsList":
-                response = user_functions.getFriendsList(data['key'], request.remote_addr)
-            elif req == "addFriend":
-                response = user_functions.addFriend(data['id'], data['key'], request.remote_addr)
-            elif req == "getUser":
-                response = user_functions.getUser(data['id'])
-            elif req == "getDirectMessages":
-                response = user_functions.getDirectMessages(data['key'], request.remote_addr)
-            elif req == "addDirectMessage":
-                response = user_functions.addDirectMessage(data['reply'], data['files'], data['message'], data['chatId'],
-                                                           data['key'], request.remote_addr)
-            elif req == "createDirectMessage":
-                response = user_functions.createDirectMessage(data['users'], data['key'], request.remote_addr)
-            elif req == "editDirectMessage":
-                response = user_functions.editDirectMessage(data['id'], data['message_id'], data['message'],
-                                                            data['key'], request.remote_addr)
-            elif req == "deleteDirectMessage":
-                response = user_functions.deleteDirectMessage(data['id'], data['message_id'], data['key'],
-                                                              request.remote_addr)
-            elif req == "updateDirectMessageInfo":
-                response = user_functions.updateDirectMessageInfo(data['data'], data['id'], data['key'],
-                                                                  request.remote_addr)
+    # try:
+    if request.method == 'POST' and data:
+        if req == "register":
+            response = user_functions.registerUser(data)
+        elif req == "login":
+            response = user_functions.loginUser(data, request.remote_addr)
+        elif req == "checkSessionKey":
+            k = user_functions.checkSessionKey(data['key'], request.remote_addr)
+            if k:
+                k = True
+                response['result'] = 'successful'
+                response['message'] = ''
             else:
-                response['message'] = f'Api method {req} does not exists!'
-        elif request.method == 'GET':
-            response['message'] = 'This server does not support GET requests!'
-    except Exception as e:
-        print(colored(f'[ERROR]: {e}', 'red'))
+                response['message'] = 'Invalid key'
+            response['content'] = k
+        elif req == "getFriendsList":
+            response = user_functions.getFriendsList(data['key'], request.remote_addr)
+        elif req == "addFriend":
+            response = user_functions.addFriend(data['id'], data['key'], request.remote_addr)
+        elif req == "getUser":
+            response = user_functions.getUser(data['id'])
+        elif req == "getDirectMessages":
+            response = user_functions.getDirectMessages(data['key'], request.remote_addr)
+        elif req == "addDirectMessage":
+            response = user_functions.addDirectMessage(data['reply'], data['files'], data['message'], data['chatId'],
+                                                       data['key'], request.remote_addr)
+        elif req == "createDirectMessage":
+            response = user_functions.createDirectMessage(data['users'], data['key'], request.remote_addr)
+        elif req == "editDirectMessage":
+            response = user_functions.editDirectMessage(data['id'], data['message_id'], data['message'],
+                                                        data['key'], request.remote_addr)
+        elif req == "deleteDirectMessage":
+            response = user_functions.deleteDirectMessage(data['id'], data['message_id'], data['key'],
+                                                          request.remote_addr)
+        elif req == "updateDirectMessageInfo":
+            response = user_functions.updateDirectMessageInfo(data['data'], data['id'], data['key'],
+                                                              request.remote_addr)
+        else:
+            response['message'] = f'Api method {req} does not exists!'
+    elif request.method == 'GET':
+        response['message'] = 'This server does not support GET requests!'
+    #except Exception as e:
+    #    print(colored(f'[ERROR]: {e}', 'red'))
 
     return dictToJson(response)
 
