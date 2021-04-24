@@ -37,7 +37,7 @@ let onReady = function () {
 
     // LOOP
     setInterval(function () {
-        if ($('.message-area')) {
+        if ($('.message-area').length) {
             let len = $('.message-area').val().trim().length
             $('.message-area-chars').text(len + "/2000")
             if (len > 2000) {
@@ -72,7 +72,7 @@ let onReady = function () {
                 $('.current-chat-messages').css('max-height', 'calc(100% - 190px)')
             }
         }
-    }, 1);
+    }, 100);
     //
 
     setInterval(function(){
