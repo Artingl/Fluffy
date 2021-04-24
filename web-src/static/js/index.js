@@ -37,41 +37,40 @@ let onReady = function () {
 
     // LOOP
     setInterval(function () {
-        let len = $('.message-area').val().trim().length
-        $('.message-area-chars').text(len + "/2000")
-        if (len > 2000) {
-            $('.message-area-chars').css('color', '#ef5350')
-        }
-        else {
-            $('.message-area-chars').css('color', '#9a9a9a')
-        }
+        if ($('.message-area')) {
+            let len = $('.message-area').val().trim().length
+            $('.message-area-chars').text(len + "/2000")
+            if (len > 2000) {
+                $('.message-area-chars').css('color', '#ef5350')
+            } else {
+                $('.message-area-chars').css('color', '#9a9a9a')
+            }
 
-        if (replyMessage[0] !== -1 && lastStateReplyMessages !== replyMessage[0]) {
-            lastStateReplyMessages = replyMessage[0]
+            if (replyMessage[0] !== -1 && lastStateReplyMessages !== replyMessage[0]) {
+                lastStateReplyMessages = replyMessage[0]
 
-            $('.reply-message').show()
-            $('.current-chat-messages').css('min-height', 'calc(100% - 262px)')
-            $('.current-chat-messages').css('max-height', 'calc(100% - 262px)')
-            let icon = "standard.jpg"
-            if (!replyMessage[4]['stuff']) {
-                if (JSON.parse(currentChatUsers[replyMessage[3]][5])['logo']) {
-                    icon = JSON.parse(currentChatUsers[replyMessage[3]][5])['logo']
+                $('.reply-message').show()
+                $('.current-chat-messages').css('min-height', 'calc(100% - 262px)')
+                $('.current-chat-messages').css('max-height', 'calc(100% - 262px)')
+                let icon = "standard.jpg"
+                if (!replyMessage[4]['stuff']) {
+                    if (JSON.parse(currentChatUsers[replyMessage[3]][5])['logo']) {
+                        icon = JSON.parse(currentChatUsers[replyMessage[3]][5])['logo']
+                    }
+                } else {
+                    icon = 'yetion_logo.png'
                 }
-            }
-            else {
-                icon = 'yetion_logo.png'
-            }
 
-            changeUserIcon(icon, 'reply-message-img') // {msgId, chatId, userId, msg}
-            $('.reply-message-text').text(replyMessage[4]['content'])
-            $("#current-chat-messages").scrollTop($("#current-chat-messages")[0].scrollHeight);
-        }
-        else if (lastStateReplyMessages !== replyMessage[0]) {
-            lastStateReplyMessages = replyMessage[0]
+                changeUserIcon(icon, 'reply-message-img') // {msgId, chatId, userId, msg}
+                $('.reply-message-text').text(replyMessage[4]['content'])
+                $("#current-chat-messages").scrollTop($("#current-chat-messages")[0].scrollHeight);
+            } else if (lastStateReplyMessages !== replyMessage[0]) {
+                lastStateReplyMessages = replyMessage[0]
 
-            $('.reply-message').hide()
-            $('.current-chat-messages').css('min-height', 'calc(100% - 190px)')
-            $('.current-chat-messages').css('max-height', 'calc(100% - 190px)')
+                $('.reply-message').hide()
+                $('.current-chat-messages').css('min-height', 'calc(100% - 190px)')
+                $('.current-chat-messages').css('max-height', 'calc(100% - 190px)')
+            }
         }
     }, 1);
     //
