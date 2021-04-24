@@ -4,6 +4,7 @@ let selectedChat = false
 let lastChatId = -1
 let currentChatUsers = {}
 let currentEscEvent = null
+let typingStatus = false
 let alertBoxAlreadyShown = false
 let chatsInfo = {}
 let me = {}

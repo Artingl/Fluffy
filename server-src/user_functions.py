@@ -11,6 +11,59 @@ from include import dictToJson, jsonToDict
 from users import *
 
 
+def deleteDirectMessage(chatId, messageId, key, ip):
+    result = {'result': 'successful', 'message': 'Message was deleted ccessfully!', 'content': ''}
+    db_sess = db.create_session()
+    user = checkSessionKey(key, ip)
+
+    if not user:
+        result['result'] = 'error'
+        result['message'] = 'Invalid session key!'
+        return result
+    dm = db_sess.query(directMessages).filter(directMessages.id == chatId,
+                                              directMessages.users.like(f"%{user.id},%")).first()
+
+    if not dm:
+        result['result'] = 'error'
+        result['message'] = 'Chat does not exist!'
+        return result
+
+    content = jsonToDict(dm.content)
+    content.pop(str(messageId))
+    dm.content = dictToJson(content)
+    db_sess.add(dm)
+    db_sess.commit()
+
+    return result
+
+
+def editDirectMessage(chatId, messageId, message, key, ip):
+    result = {'result': 'successful', 'message': 'Message was edited successfully!', 'content': ''}
+    db_sess = db.create_session()
+    user = checkSessionKey(key, ip)
+
+    if not user:
+        result['result'] = 'error'
+        result['message'] = 'Invalid session key!'
+        return result
+    dm = db_sess.query(directMessages).filter(directMessages.id == chatId,
+                                              directMessages.users.like(f"%{user.id},%")).first()
+
+    if not dm:
+        result['result'] = 'error'
+        result['message'] = 'Chat does not exist!'
+        return result
+
+    content = jsonToDict(dm.content)
+    content[str(messageId)]["content"] = message
+    content[str(messageId)]["edited"] = True
+    dm.content = dictToJson(content)
+    db_sess.add(dm)
+    db_sess.commit()
+
+    return result
+
+
 def resetState(chatId):
     pass
 
@@ -157,16 +210,21 @@ def getDirectMessages(key, ip):
     dmsd = db_sess.query(directMessages).filter(directMessages.users.like(f"%{user.id},%")).all()
     dms = []
     dms_time = []
-    for e, dm in enumerate(dmsd):
+    for dm in dmsd:
+        e = int(dm.id) - 1
         cnt = jsonToDict(dm.content)
-        dms_time.append((e, cnt[str(len(cnt) - 1)]['time']))
+        dms_time.append((e, cnt[str(list(cnt)[-1])]['time']))
     dms_time.sort(key=lambda x: x[1], reverse=True)
     for e, i in dms_time:
         dms.append(dmsd[e])
 
     keys = ""
     for dm in dms:
-        content[dm.id] = [dm.users.replace(f"{user.id},", ""), jsonToDict(dm.info), jsonToDict(dm.content)]
+        cnt = jsonToDict(dm.content)
+        inf = jsonToDict(dm.info)
+        inf['last_msg'] = cnt[str(list(cnt)[-1])]
+
+        content[dm.id] = [dm.users.replace(f"{user.id},", ""), inf, cnt]
         keys += str(dm.id) + ","
 
     result['content'] = [keys, content]

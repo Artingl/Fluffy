@@ -67,16 +67,13 @@ let onReady = function () {
                         if (msg && data['content'][msg])
                         {
                             let chatUsers = data['content'][msg][0].split(",")
+                            let lastMsg = data['content'][msg][1]['last_msg']
+
                             $.ajax({
                                 url: api + "/api/getUser/" + '{"id":"' + chatUsers[0] + '"}',
                                 type: "post",
                                 success: function (newData) {
                                     newData = JSON.parse(newData)
-                                    let lastMsg = ""
-                                    if (data['content'][msg][2] !== {}) {
-                                        lastMsg = data['content'][msg][2][Object.keys(data['content'][msg][2]).length - 1]
-                                    }
-
                                     let addToMsg = ""
                                     let title = newData['content'][1] + " " + newData['content'][2]
                                     let linkToUserIcon = JSON.parse(newData['content'][5])['logo']
@@ -100,7 +97,7 @@ let onReady = function () {
                                         title = data['content'][msg][1]['title']
                                     }
 
-                                    chatsInfo[msg] = {'title': title, 'icon': linkToUserIcon}
+                                    chatsInfo[msg] = {'title': title, 'icon': linkToUserIcon, 'last_msg': lastMsg}
 
                                     if (selectedChat) {
                                         $('.chat-info-name').val(title)
@@ -209,6 +206,10 @@ let openChat = function (_id) {
                 let tag = ''
                 let msgSize = msg['content'].length
 
+                if (msg['edited']) {
+                     time = time + " (edited)"
+                }
+
                 if (!msg['stuff']) {
                     if (JSON.parse(currentChatUsers[msg['fromUser']][5])['logo']) {
                         icon = JSON.parse(currentChatUsers[msg['fromUser']][5])['logo']
@@ -227,19 +228,20 @@ let openChat = function (_id) {
                 }
 
                 $('.current-chat-messages').append('<div class="msg-chat msg-chat-n_' + msgInt + '" style="width: ' + size + 'px;' + tag + '">\n' +
-                    '<p>' + msg['content'] + '</p>\n' +
+                    '<p class="msg-chat-content-n_' + msgInt + '">' + msg['content'] + '</p>\n' +
                     '<img src="' + api + '/files/' + icon + '">\n' +
-                    '<span>' + time + '</span></div>')
+                    '<span class="msg-chat-info-n_' + msgInt + '">' + time + '</span></div>')
 
                 $('.msg-chat-n_' + msgInt).bind("contextmenu", function (event) {
-                    event.preventDefault();
+                    event.preventDefault(); // TODO: delete/edit messages, messages reply, settings, uploading files/images, etc.
+
                     $('.context-menu').empty()
-                    $('.context-menu').append('<div style="margin-top: 10px;"></div>')
+                    $('.context-menu').append('<div style="margin-top: 5px;"></div>')
                     $('.context-menu').append('<button onclick="" type="button" class="blueButton button btn-context">Reply</button>')
 
-                    if (msg['fromUser'][6] === me[6]) {
-                        $('.context-menu').append('<button onclick="" type="button" class="blueButton button btn-context">Edit message</button>')
-                        $('.context-menu').append('<button onclick="" type="button" class="redButton button btn-context">Delete message</button>')
+                    if (parseInt(msg['fromUser']) === parseInt(me[6])) {
+                        $('.context-menu').append('<button onclick="showDialogChangeMessage(' + msgInt + ', ' + selectedChat + ')" type="button" class="blueButton button btn-context">Edit message</button>')
+                        $('.context-menu').append('<button onclick="deleteDialogMessage(' + msgInt + ', ' + selectedChat + ')" type="button" class="redButton button btn-context">Delete message</button>')
                     }
 
                     $('.context-menu').append('<div style="margin-top: 10px;"></div>')
@@ -258,6 +260,94 @@ let openChat = function (_id) {
     })
 
 };
+
+let deleteMessage = function (msgId, chatId) {
+    $.ajax({
+        url: api + "/api/deleteDirectMessage/" + '{"key":"' + token + '", "id":"' + chatId + '", "message_id":"' + msgId + '"}',
+        type: "post",
+        success: function (dataStr) {
+            let data = JSON.parse(dataStr)
+            if (data['result'] === 'successful') {
+                $('.msg-chat-n_' + msgId).remove()
+                if (currentEscEvent) {
+                    currentEscEvent()
+                }
+            }
+        }
+    })
+};
+
+let editMessage = function (msgId, chatId) {
+    let value = $('.edit-dialog-area').val().trim()
+    if (value.length > 2000) {
+        return
+    }
+    if ($('.msg-chat-content-n_' + msgId).text() === value) {
+        if (currentEscEvent) {
+            currentEscEvent()
+        }
+        return;
+    }
+
+    $.ajax({
+        url: api + "/api/editDirectMessage/" + '{"key":"' + token + '", "id":"' + chatId + '", "message_id":"' + msgId + '", "message":"' + value + '"}',
+        type: "post",
+        success: function (dataStr) {
+            let data = JSON.parse(dataStr)
+            if (data['result'] === 'successful') {
+                $('.msg-chat-content-n_' + msgId).text(value)
+                $('.msg-chat-info-n_' + msgId).text($('.msg-chat-info-n_' + msgId).text() + " (edited)")
+                if (currentEscEvent) {
+                    currentEscEvent()
+                }
+            }
+        }
+    })
+};
+
+let showDialogChangeMessage = function (msgId, chatId) {
+    if (alertBoxAlreadyShown) {
+        return
+    }
+
+    let fullscreen_alertbox = $(".fullscreen-alertbox")
+    let oldMsg = $('.msg-chat-content-n_' + msgId).text()
+
+    fullscreen_alertbox.empty()
+    fullscreen_alertbox.append('<span>Enter new message</span>')
+    fullscreen_alertbox.append('<input onkeydown="sendMessage(this)" type="text" class="form-control edit-dialog-area" name="password" placeholder="Type a message" value="' + oldMsg +'">')
+    fullscreen_alertbox.append('<button onclick="editMessage(' + msgId + ', ' + chatId + ')" class="btn btn-primary" style="position: relative;top: 100px;" >Change</button>')
+
+    $('.context-menu').fadeOut(100);
+    $('.darkenBg').fadeIn(250)
+    fullscreen_alertbox.fadeIn(250, function () {
+        alertBoxAlreadyShown = true
+        currentEscEvent = hideAlertBox
+    })
+};
+
+let deleteDialogMessage = function (msgId, chatId) {
+    if (alertBoxAlreadyShown) {
+        return
+    }
+
+    let fullscreen_alertbox = $(".fullscreen-alertbox")
+    let icon = '<img src="static/img/info64px.png">'
+
+    fullscreen_alertbox.empty()
+    fullscreen_alertbox.append(icon)
+    fullscreen_alertbox.append('<p>Do you really want to delete this message?</p>')
+    fullscreen_alertbox.append('<button onclick="deleteMessage(' + msgId + ', ' + chatId + ')" class="btn btn-primary" style="margin-top: 12px;border-color: #ef5350;background-color: #ef5350;" >Delete</button>')
+    fullscreen_alertbox.append('<button onclick="hideAlertBox()" class="btn btn-primary" style="margin-top: 12px;margin-left: 50px;" >Close</button>')
+
+    $('.context-menu').fadeOut(100);
+    $('.darkenBg').fadeIn(250)
+    fullscreen_alertbox.fadeIn(250, function () {
+        alertBoxAlreadyShown = true
+        currentEscEvent = hideAlertBox
+    })
+};
+
 
 let changeChatName = function (ele) {
     if (!selectedChat) return;
@@ -345,10 +435,15 @@ let sendMessage = function (ele) {
             name += '.'
         }
 
-        $.ajax({
-            url: api + '/api/updateDirectMessageInfo/' + '{"key":"' + token + '", "id":"' + selectedChat + '", "data":{"state":"' + name + ' typing..."}}',
-            type: 'post'
-        })
+        if (!typingStatus) {
+            //$.ajax({
+            //    url: api + '/api/updateDirectMessageInfo/' + '{"key":"' + token + '", "id":"' + selectedChat + '", "data":{"state":"' + name + ' typing..."}}',
+            //    type: 'post',
+            //    success: function (dataStr) {
+            //        typingStatus = true
+            //    }
+            //})
+        }
     }
 };
 
@@ -372,7 +467,7 @@ let showAlertBox = function (message, type) {
     fullscreen_alertbox.empty()
     fullscreen_alertbox.append(icon)
     fullscreen_alertbox.append('<p>' + message + '</p>')
-    fullscreen_alertbox.append('<input onClick="hideAlertBox()" type="button" class="btn btn-primary" style="margin-top: 12px;" value="OK">')
+    fullscreen_alertbox.append('<button onclick="hideAlertBox()" class="btn btn-primary" style="margin-top: 12px;" >OK</button>')
 
     $('.darkenBg').fadeIn(250)
     fullscreen_alertbox.fadeIn(250, function () {
