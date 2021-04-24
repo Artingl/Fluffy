@@ -14,6 +14,7 @@ let onReady = function () {
     let fullscreen_alertbox = $(".fullscreen-alertbox")
     let context_menu = $('.context-menu')
     let lastChats = {}
+    let lastStateReplyMessages = false
 
     $('*').on('keydown', function(event) {
         if (event.keyCode === 27 && currentEscEvent) {
@@ -43,6 +44,34 @@ let onReady = function () {
         }
         else {
             $('.message-area-chars').css('color', '#9a9a9a')
+        }
+
+        if (replyMessage[0] !== -1 && lastStateReplyMessages !== replyMessage[0]) {
+            lastStateReplyMessages = replyMessage[0]
+
+            $('.reply-message').show()
+            $('.current-chat-messages').css('min-height', 'calc(100% - 262px)')
+            $('.current-chat-messages').css('max-height', 'calc(100% - 262px)')
+            let icon = "standard.jpg"
+            if (!replyMessage[4]['stuff']) {
+                if (JSON.parse(currentChatUsers[replyMessage[3]][5])['logo']) {
+                    icon = JSON.parse(currentChatUsers[replyMessage[3]][5])['logo']
+                }
+            }
+            else {
+                icon = 'yetion_logo.png'
+            }
+
+            changeUserIcon(icon, 'reply-message-img') // {msgId, chatId, userId, msg}
+            $('.reply-message-text').text(replyMessage[4]['content'])
+            $("#current-chat-messages").scrollTop($("#current-chat-messages")[0].scrollHeight);
+        }
+        else if (lastStateReplyMessages !== replyMessage[0]) {
+            lastStateReplyMessages = replyMessage[0]
+
+            $('.reply-message').hide()
+            $('.current-chat-messages').css('min-height', 'calc(100% - 190px)')
+            $('.current-chat-messages').css('max-height', 'calc(100% - 190px)')
         }
     }, 1);
     //
@@ -204,10 +233,27 @@ let openChat = function (_id) {
                 let icon = 'standard.jpg'
                 let size = 200
                 let tag = ''
+                let rpl = ''
+                let ptag = ''
                 let msgSize = msg['content'].length
 
                 if (msg['edited']) {
                      time = time + " (edited)"
+                }
+
+                if (parseInt(msg['reply']) !== -1 && msg['reply']) {
+                    let r = content[_id][2][msg['reply']]
+                    let m = r['content']
+                    if (m.length > 50) {
+                         m = m.slice(0, 50) + "..."
+                    }
+                    else {
+                        m = m.slice(0, 50)
+                    }
+
+                    rpl = '<div class="reply-msg-chat">Reply: ' + m + '</div>\n'
+                    tag += 'margin-top: 39px;'
+                    ptag += 'margin-top: 15px;'
                 }
 
                 if (!msg['stuff']) {
@@ -217,7 +263,7 @@ let openChat = function (_id) {
                 }
                 else {
                     icon = 'yetion_logo.png'
-                    tag = 'background-color: #c2dfff;'
+                    tag += 'background-color: #c2dfff;'
                 }
 
                 if (msgSize * 8 > 200) {
@@ -228,16 +274,18 @@ let openChat = function (_id) {
                 }
 
                 $('.current-chat-messages').append('<div class="msg-chat msg-chat-n_' + msgInt + '" style="width: ' + size + 'px;' + tag + '">\n' +
-                    '<p class="msg-chat-content-n_' + msgInt + '">' + msg['content'] + '</p>\n' +
+                    rpl +
+                    '<p style="' + ptag + '" class="msg-chat-content-n_' + msgInt + '">' + msg['content'] + '</p>\n' +
                     '<img src="' + api + '/files/' + icon + '">\n' +
                     '<span class="msg-chat-info-n_' + msgInt + '">' + time + '</span></div>')
 
                 $('.msg-chat-n_' + msgInt).bind("contextmenu", function (event) {
-                    event.preventDefault(); // TODO: delete/edit messages, messages reply, settings, uploading files/images, etc.
+                    event.preventDefault(); // TODO: settings, uploading files/images, etc.
 
+                    replyMessage = [-1, msgInt, selectedChat, msg['fromUser'], msg]
                     $('.context-menu').empty()
                     $('.context-menu').append('<div style="margin-top: 5px;"></div>')
-                    $('.context-menu').append('<button onclick="" type="button" class="blueButton button btn-context">Reply</button>')
+                    $('.context-menu').append('<button onclick="reply()" type="button" class="blueButton button btn-context">Reply</button>')
 
                     if (parseInt(msg['fromUser']) === parseInt(me[6])) {
                         $('.context-menu').append('<button onclick="showDialogChangeMessage(' + msgInt + ', ' + selectedChat + ')" type="button" class="blueButton button btn-context">Edit message</button>')
@@ -259,6 +307,11 @@ let openChat = function (_id) {
         }
     })
 
+};
+
+let reply = function () {
+    replyMessage[0] = 1
+    $('.context-menu').fadeOut(100);
 };
 
 let deleteMessage = function (msgId, chatId) {
@@ -400,7 +453,7 @@ let sendMessage = function (ele) {
 
         if (value) {
             $.ajax({
-                url: api + "/api/addDirectMessage/" + '{"key":"' + token + '", "message":"' + value + '", "chatId":"' + selectedChat + '", "files":{}}',
+                url: api + "/api/addDirectMessage/" + '{"key":"' + token + '", "message":"' + value + '", "chatId":"' + selectedChat + '", "files":{}, "reply":"' + replyMessage[1] + '"}',
                 type: "post",
                 success: function (dataStr) {
                     ele.value = ""
@@ -424,6 +477,7 @@ let sendMessage = function (ele) {
                         '<img src="' + api + '/files/' + icon + '">\n' +
                         '<span>' + time + '</span></div>')
                     $("#current-chat-messages").scrollTop($("#current-chat-messages")[0].scrollHeight);
+                    replyMessage = [-1]
                 }
             })
         }
@@ -482,6 +536,17 @@ let hideAlertBox = function () {
         alertBoxAlreadyShown = false
     })
 };
+
+let uploadUserImage = async function (inp) {
+    let formData = new FormData();
+    formData.append("file", inp.files[0]);
+    await fetch(api + '/fileUpload/changeUserIcon/' + '{"token":"' + token + '"}', {method: "POST", body: formData}).then((response) => response.json())
+    .then((data) => {
+        if (data['result'] === 'successful') {
+            location.reload()
+        }
+    });
+}
 
 let uploadChatImage = async function (inp) {
     let formData = new FormData();

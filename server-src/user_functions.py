@@ -4,11 +4,36 @@ import random
 import string
 import time
 
-import db
 from werkzeug.security import generate_password_hash, check_password_hash
+
 from directMessages import directMessages
 from include import dictToJson, jsonToDict
 from users import *
+
+
+def changeUserIcon(file, key, ip):
+    result = {'result': 'successful', 'message': 'Icon was changed successfully!', 'content': ''}
+    db_sess = db.create_session()
+    user = checkSessionKey(key, ip)
+
+    if not user:
+        result['result'] = 'error'
+        result['message'] = 'Invalid session key!'
+        return result
+
+    if user is None:
+        result['result'] = 'error'
+        result['message'] = 'User does not exist'
+        return result
+
+    info = json.loads(user.anotherInfo)
+    info['logo'] = file
+    user.anotherInfo = json.dumps(info)
+    db_sess.add(user)
+    db_sess.commit()
+
+    result['content'] = info
+    return result
 
 
 def deleteDirectMessage(chatId, messageId, key, ip):
@@ -91,7 +116,7 @@ def updateDirectMessageInfo(data, chatId, key, ip):
         if key == "state":
             pass
         if key == "title":
-            addDirectMessage({}, user.nickname + " has changed channel name to " + val, chatId,
+            addDirectMessage(-1, {}, user.nickname + " has changed channel name to " + val, chatId,
                              "f528764d624db129b32c21fbca0cb8d6_QVWTF7FSSNLJAW72SEJK6Q2JE655WMIYG4A987LOGFXGL0JL",
                              "127.0.0.1", stuff=True)
 
@@ -131,7 +156,7 @@ def createDirectMessage(users, key, ip):
     return result
 
 
-def addDirectMessage(files, message, chatId, key, ip, stuff=False):
+def addDirectMessage(reply, files, message, chatId, key, ip, stuff=False):
     result = {'result': 'successful', 'message': 'Message has added successfully', 'content': ''}
     content = {}
     db_sess = db.create_session()
@@ -160,6 +185,7 @@ def addDirectMessage(files, message, chatId, key, ip, stuff=False):
 
     content[str(messageId)] = {
         "content": message, "fromUser": str(user.id), "time": str(int(time.time())), "files": jsonToDict(files),
+        'reply': reply,
         'stuff': stuff
     }
 
@@ -322,6 +348,7 @@ def checkSessionKey(key, ip):
     if user is None or ip != key_ip:
         return False
 
+    db_sess.close()
     return user
 
 

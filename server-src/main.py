@@ -27,6 +27,25 @@ def genFileName(ext):
     return name
 
 
+@app.route('/fileUpload/changeUserIcon/<string:data>', methods=['GET', 'POST'])
+def changeUserIcon(data):
+    data = jsonToDict(data)
+    response = {
+        'result': 'error',
+        'message': 'An unknown error!'
+    }
+    try:
+        file = request.files['file']
+        filename = secure_filename(file.filename)
+        name = genFileName("." + filename.split(".")[-1])
+        file.save(os.path.join(app.root_path, 'data/images/' + name))
+        response = user_functions.changeUserIcon(name, data['token'], request.remote_addr)
+    except Exception as e:
+        print(colored(f'[ERROR]: {e}', 'red'))
+
+    return dictToJson(response)
+
+
 @app.route('/fileUpload/changeChatIcon/<string:data>', methods=['GET', 'POST'])
 def filesUpls(data):
     data = jsonToDict(data)
@@ -88,7 +107,7 @@ def apiPage(req, data):
             elif req == "getDirectMessages":
                 response = user_functions.getDirectMessages(data['key'], request.remote_addr)
             elif req == "addDirectMessage":
-                response = user_functions.addDirectMessage(data['files'], data['message'], data['chatId'],
+                response = user_functions.addDirectMessage(data['reply'], data['files'], data['message'], data['chatId'],
                                                            data['key'], request.remote_addr)
             elif req == "createDirectMessage":
                 response = user_functions.createDirectMessage(data['users'], data['key'], request.remote_addr)
